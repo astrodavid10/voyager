@@ -121,3 +121,10 @@ body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fo
     &.on { background: rgba(255, 209, 102, 0.18); color: var(--accent); font-weight: 700; }
     &:focus-visible { outline: 3px solid var(--accent); } }
 }
+
+// Landscape phones: the story card becomes a right-hand panel so the
+// ladder and the view keep the height (overlap audit, 812x375).
+@media (max-height: 520px) and (orientation: landscape) {
+  .vy-card { left: auto; right: 10px; width: 350px; top: 70px; bottom: 10px; max-height: none; }
+  .vy-top { padding-bottom: 8px; }
+}

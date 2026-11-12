@@ -33,11 +33,11 @@ export const CHAPTERS: Chapter[] = [
   },
   {
     id: "bubble",
-    title: "Nobody knows the shape yet",
+    title: "Edge of the Sun's Bubble",
     tiers: ["MEASURED", "MODELED"],
-    body: "The Sun blows a bubble of solar wind, the heliosphere. Voyager 1 crossed its edge, "
-      + "the heliopause, in 2012 and Voyager 2 in 2018: two measured points. The tail is "
-      + "inference, and models disagree. NASA's IMAP mission is mapping it now.",
+    body: "The Sun blows a bubble of solar wind, the heliosphere, but we aren't yet sure of its shape. "
+      + "Voyager 1 crossed its edge, the heliopause, in 2012 and Voyager 2 in 2018. "
+      + "NASA's new IMAP mission is mapping it in more detail now.",
     next: "Zoom out",
   },
   {

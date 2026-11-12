@@ -394,7 +394,7 @@ export default defineComponent({
       const script: [number, () => void][] = [
         [0, () => { this.attractFinale = false; this.shape = "comet"; this.index = 0; this.attractLine = v1; }],
         [15, () => { this.index = 1; this.attractLine = "Launched in 1977. Still talking to us."; }],
-        [43, () => { this.index = 2; this.attractLine = "It left the Sun's bubble in 2012. Nobody knows the bubble's shape."; }],
+        [43, () => { this.index = 2; this.attractLine = "It left the Sun's bubble in 2012. We aren't yet sure of the bubble's shape."; }],
         [48, () => { this.shape = "croissant"; }],
         [53, () => { this.shape = "bubble"; }],
         [59, () => { this.shape = "comet"; this.index = 3; this.attractLine = "30,000 more years to cross the Oort cloud"; }],

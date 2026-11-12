@@ -11,7 +11,7 @@
         :style="{ transform: `translate(${p.x}px, ${p.y}px)`, '--pin': p.color }"
       >
         <span class="pin-dot" />
-        <span v-show="!p.labelHidden" class="pin-label">{{ p.label }}<small v-if="p.sub">{{ p.sub }}</small></span>
+        <span v-show="!p.labelHidden" class="pin-label" :style="{ top: (p.dy ?? -10) + 'px' }">{{ p.label }}<small v-if="p.sub">{{ p.sub }}</small></span>
       </div>
     </div>
     <nav v-if="ready" class="ladder" aria-label="Distance from the Sun">
@@ -100,6 +100,8 @@ interface Pin {
   x: number; y: number; visible: boolean;
   /** Label side chosen by the declutter pass ("r" default, "l" flipped). */
   side?: "r" | "l";
+  /** Label top offset from the dot, px (-10 = beside it). */
+  dy?: number;
   /** Dot only: the label would have covered a higher-priority label. */
   labelHidden?: boolean;
   /** Draw as an open ring (Pale Blue Dot Earth: the real dot shows through). */
@@ -113,6 +115,7 @@ const PIN_PRIORITY: Record<string, number> = {
 
 interface Rect { x0: number; y0: number; x1: number; y1: number }
 const placed: Rect[] = [];
+const dots: Rect[] = [];
 const order: Pin[] = [];
 
 /**
@@ -129,24 +132,45 @@ function declutter(pins: Pin[], vw: number, vh: number, obstacles: Rect[]): void
   placed.length = 0;
   // UI chrome (header, ladder, card, credit, QR) is pre-placed: labels yield to it.
   for (const o of obstacles) { placed.push(o); }
+  // So are ALL visible markers (a label must not hide another pin's dot).
+  dots.length = 0;
   for (const p of order) {
+    const d = p.ring ? 17 : 7;
+    dots.push({ x0: p.x - d, y0: p.y - d, x1: p.x + d, y1: p.y + d });
+  }
+  for (let i = 0; i < order.length; i++) {
+    const p = order[i];
+    const own = dots[i];
     const small = p.kind === "pulsar" || p.kind === "crossing";
     const cw = small ? 6.6 : 7.6;
-    const w = Math.min(170, Math.max(p.label.length, p.sub.length * 0.92) * cw) + 6;
-    const h = p.sub ? 34 : 19;
+    // Labels wrap at 170 px, so long names take two lines: estimate the height.
+    const textW = Math.max(p.label.length, p.sub.length * 0.92) * cw;
+    const w = Math.min(170, textW) + 6;
+    const lines = Math.ceil(textW / 170) + (p.sub ? 1 : 0);
+    const h = lines * 17 + 2;
     const gap = p.ring ? 22 : 11;
-    const right: Rect = { x0: p.x + gap, y0: p.y - 10, x1: p.x + gap + w, y1: p.y - 10 + h };
-    const left: Rect = { x0: p.x - gap - w, y0: right.y0, x1: p.x - gap, y1: right.y1 };
+    // Candidate placements: beside the dot, then above, then below it.
+    const cands: [Pin["side"], number][] = [["r", -10], ["l", -10], ["r", -h - 4], ["l", -h - 4], ["r", 8], ["l", 8]];
+    const rectFor = (side: Pin["side"], dy: number): Rect => side === "r"
+      ? { x0: p.x + gap, y0: p.y + dy, x1: p.x + gap + w, y1: p.y + dy + h }
+      : { x0: p.x - gap - w, y0: p.y + dy, x1: p.x - gap, y1: p.y + dy + h };
+    const over = (r: Rect, q: Rect) => r.x0 < q.x1 && r.x1 > q.x0 && r.y0 < q.y1 && r.y1 > q.y0;
     const fits = (r: Rect) => r.x0 >= 2 && r.x1 <= vw - 2 && r.y0 >= 0 && r.y1 <= vh
-      && !placed.some((q) => r.x0 < q.x1 && r.x1 > q.x0 && r.y0 < q.y1 && r.y1 > q.y0);
-    if (fits(right)) { p.side = "r"; p.labelHidden = false; placed.push(right); } else if (fits(left)) {
-      p.side = "l"; p.labelHidden = false; placed.push(left);
-    } else {
-      p.labelHidden = true;
+      && !placed.some((q) => over(r, q)) && !dots.some((q) => q !== own && over(r, q));
+    // Top-priority labels (craft, flyby, Sun) may cover LOWER-priority markers
+    // rather than vanish; everything else must clear every marker.
+    const loose = (r: Rect) => r.x0 >= 2 && r.x1 <= vw - 2 && r.y0 >= 0 && r.y1 <= vh
+      && !placed.some((q) => over(r, q));
+    const vip = (PIN_PRIORITY[p.kind] ?? 9) <= 3;
+    p.labelHidden = true;
+    for (const test of vip ? [fits, loose] : [fits]) {
+      const hit = cands.find(([side, dy]) => test(rectFor(side, dy)));
+      if (hit) {
+        p.side = hit[0]; p.dy = hit[1]; p.labelHidden = false;
+        placed.push(rectFor(hit[0], hit[1]));
+        break;
+      }
     }
-    // The dot itself is an obstacle for lower-priority labels.
-    const d = p.ring ? 17 : 8;
-    placed.push({ x0: p.x - d, y0: p.y - d, x1: p.x + d, y1: p.y + d });
   }
 }
 
@@ -170,6 +194,7 @@ interface Runtime {
   pulsarMap: PulsarMap | null;
   flyby: Flyby | null;
   obstacles: Rect[];
+  obstaclesAt: number;
   momentAlpha: number;
   momentT0: number;
   flybyYears: number;
@@ -215,7 +240,7 @@ export default defineComponent({
       frame: 0,
       rt: markRaw({
         stage: null, gestures: null, eph: null, trails: {}, targets: [], projected: [],
-        world: null, helio: null, offset: [0, 0, 0], shellMats: {}, tidal: null, oort: null, galaxy: null, galaxyLabels: {}, pbd: null, pbdAlpha: 0, family: null, familyAlpha: 0, pulsarMap: null, flyby: null, obstacles: [], momentAlpha: 0, momentT0: 0, flybyYears: 0,
+        world: null, helio: null, offset: [0, 0, 0], shellMats: {}, tidal: null, oort: null, galaxy: null, galaxyLabels: {}, pbd: null, pbdAlpha: 0, family: null, familyAlpha: 0, pulsarMap: null, flyby: null, obstacles: [], obstaclesAt: 0, momentAlpha: 0, momentT0: 0, flybyYears: 0,
         lastYearEmit: 0, lastFadeMs: 0, lastTimeSync: 0,
         timer: 0, destroyed: false,
       } as Runtime),
@@ -808,7 +833,7 @@ export default defineComponent({
             : `${distanceAu(positionAt(eph.bodies[p.id], ms)).toFixed(0)} au`;
         }
       }
-      if ((this.frame & 15) === 1) { this.refreshObstacles(); }
+      if (performance.now() - rt.obstaclesAt > 250) { rt.obstaclesAt = performance.now(); this.refreshObstacles(); }
       declutter(this.pins, w, h, rt.obstacles);
     },
   },
@@ -885,10 +910,16 @@ export type { EngineSetting };
   .ladder { width: 96px; .rung-t { font-size: 12px; small { display: none; } } }
 }
 @media (min-width: 900px) { .ladder { bottom: 40px; top: 120px; } }
+@media (max-height: 520px) and (orientation: landscape) {
+  .ladder { top: 100px; bottom: 18px; width: 110px;
+    .rung { height: 24px; margin-top: -12px; }
+    .rung-t { font-size: 12px; small { display: none; } } }
+  .v3d-credit { top: 78px; right: 372px; }
+}
 // Top right, under the header's info button: clear of the ladder (left), the
 // story card / pill (bottom) and the top-left title.
 .v3d-credit {
-  position: absolute; z-index: 6; right: 12px; top: calc(env(safe-area-inset-top, 0px) + 64px);
+  position: absolute; z-index: 6; right: 12px; top: calc(env(safe-area-inset-top, 0px) + 100px);
   max-width: 190px; padding: 4px 8px; border-radius: 8px; text-align: right;
   font-size: 12px; line-height: 1.3; color: #cfd6ff; background: rgba(5, 3, 15, 0.55); cursor: pointer;
   &:focus-visible { outline: 3px solid #ffd166; }

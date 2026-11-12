@@ -26,7 +26,7 @@ export default defineComponent({
 
 <style lang="less">
 .kqr {
-  position: absolute; z-index: 7; right: 16px; top: 16px; padding: 10px; border-radius: 14px;
+  position: absolute; z-index: 7; right: 16px; top: 96px; padding: 10px; border-radius: 14px;
   background: #fff; color: #05030f; text-align: center; transition: transform 400ms ease;
   svg { display: block; }
   p { margin: 6px 0 0; font-size: 13px; font-weight: 700; max-width: 120px; line-height: 1.2; }
