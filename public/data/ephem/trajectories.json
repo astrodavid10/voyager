@@ -1,0 +1,69 @@
+{
+ "schema": "voyager.ephem/1",
+ "generated_utc": "2026-11-12T03:34:05Z",
+ "source": "JPL Horizons API (VECTORS, CENTER 500@10, REF_PLANE ECLIPTIC, ICRF)",
+ "frame": "heliocentric ecliptic J2000, AU, right-handed (x to vernal equinox, z to ecliptic north)",
+ "time_note": "epochs are TDB at 00:00; epoch i = start + i*step_days",
+ "bodies": [
+  {
+   "id": "voyager1",
+   "horizons_id": "-31",
+   "name": "Voyager 1",
+   "color": "#E69F00",
+   "start": "1977-09-06",
+   "step_days": 1,
+   "count": 21301,
+   "file": "ephem/voyager1.bin"
+  },
+  {
+   "id": "voyager2",
+   "horizons_id": "-32",
+   "name": "Voyager 2",
+   "color": "#56B4E9",
+   "start": "1977-08-21",
+   "step_days": 1,
+   "count": 21317,
+   "file": "ephem/voyager2.bin"
+  },
+  {
+   "id": "newhorizons",
+   "horizons_id": "-98",
+   "name": "New Horizons",
+   "color": "#009E73",
+   "start": "2006-01-20",
+   "step_days": 2,
+   "count": 5469,
+   "file": "ephem/newhorizons.bin"
+  },
+  {
+   "id": "pioneer10",
+   "horizons_id": "-23",
+   "name": "Pioneer 10",
+   "color": "#CC79A7",
+   "start": "1972-03-04",
+   "step_days": 2,
+   "count": 11657,
+   "file": "ephem/pioneer10.bin"
+  },
+  {
+   "id": "pioneer11",
+   "horizons_id": "-24",
+   "name": "Pioneer 11",
+   "color": "#D55E00",
+   "start": "1973-04-07",
+   "step_days": 2,
+   "count": 11457,
+   "file": "ephem/pioneer11.bin"
+  },
+  {
+   "id": "earth",
+   "horizons_id": "399",
+   "name": "Earth",
+   "color": "#4F8FE8",
+   "start": "1972-03-04",
+   "step_days": 2,
+   "count": 11657,
+   "file": "ephem/earth.bin"
+  }
+ ]
+}
