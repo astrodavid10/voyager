@@ -7,6 +7,7 @@
         :scene-ms="sceneMs"
         :shape="shape"
         :pbd="pbd"
+        :following="journeyRunning"
         :family="family"
         :moment="moment"
         @flyby-year="flybyYears = $event"
@@ -221,6 +222,7 @@ export default defineComponent({
       familyPlanets: ["Venus", "Earth", "Jupiter", "Saturn", "Uranus", "Neptune"],
       moment: "",
       cardHidden: false,
+      journeyRunning: false,
       journeyWaiting: false,
       journeyFallback: 0,
       showCredits: false,
@@ -296,6 +298,7 @@ export default defineComponent({
   watch: {
     "chapter.id"(id: string) {
       cancelAnimationFrame(this.raf);
+      this.journeyRunning = false;
       this.stopListen();
       this.pbd = false;
       this.family = "";
@@ -348,8 +351,9 @@ export default defineComponent({
         const f = Math.min(1, (performance.now() - this.journeyT0) / (seconds * 1000));
         const e = f * f * (3 - 2 * f) * 0.6 + f * 0.4;
         this.sceneMs = fromMs + (this.now - fromMs) * e;
-        if (f < 1) { this.raf = requestAnimationFrame(step); }
+        if (f < 1) { this.raf = requestAnimationFrame(step); } else { this.journeyRunning = false; }
       };
+      this.journeyRunning = true;
       this.raf = requestAnimationFrame(step);
     },
     onFramed(ch: string): void {
@@ -360,6 +364,7 @@ export default defineComponent({
     },
     startPbd(): void {
       cancelAnimationFrame(this.raf);
+      this.journeyRunning = false;
       this.sceneMs = PBD_MS;
       this.pbd = true;
     },

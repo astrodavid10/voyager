@@ -72,7 +72,7 @@ import { ThreeStage, createThreeStage } from "../three/stage";
 import { installSunGestures, type SunGestures } from "../wwt/gestures";
 import { installHiDpiCanvas } from "../wwt/wwt-hacks";
 import {
-  Shot, StageHost, aimTo, currentDistanceAu, currentShot, fitDistance, flyTo, initVoyagerStage, liveTargetEcl,
+  Shot, StageHost, aimZoom, currentDistanceAu, currentShot, fitDistance, flyTo, initVoyagerStage, liveTargetEcl,
   rollForUp, viewFromEcliptic,
 } from "../wwt/voyagerStage";
 
@@ -218,6 +218,8 @@ export default defineComponent({
     shape: { type: String as PropType<"comet" | "croissant" | "bubble">, default: "comet" },
     /** Pale Blue Dot moment (journey chapter): fly to Voyager's 1990 sightline. */
     pbd: { type: Boolean, default: false },
+    /** True while the journey clock is running: zoom follows and is locked. */
+    following: { type: Boolean, default: false },
     /** Family Portrait step inside the Pale Blue Dot moment: "" | "all" | a planet name. */
     family: { type: String, default: "" },
     /** Chapter-5 moments: "" | "pulsars" (Golden Record map) | "flyby" (Gliese 445). */
@@ -715,7 +717,8 @@ export default defineComponent({
         t.geom.setDrawRange(0, sampleIndexAt(eph.bodies[id], ms) + 1);
       }
       // Keep WWT's own planets (and orbits) on the scene date: ~10 Hz is plenty.
-      if (performance.now() - rt.lastTimeSync > 100) {
+      // Every frame while the journey clock runs (smooth planets); ~10 Hz otherwise.
+      if (performance.now() - rt.lastTimeSync > (this.following ? 0 : 100)) {
         rt.lastTimeSync = performance.now();
         (this as unknown as { setTime: (d: Date) => void }).setTime(new Date(ms));
       }
@@ -747,11 +750,9 @@ export default defineComponent({
           this.$emit("flyby-year", Math.round(rt.flybyYears));
         }
       }
-      if (this.chapter === "journey" && !this.pbd) {
-        const r = Math.max(12, distanceAu(this.craftPos("voyager1")) * 1.15);
-        const s = this.shotFor("journey");
-        s.distanceAu = fitDistance(r);
-        aimTo(s);
+      if (this.chapter === "journey" && !this.pbd && this.following) {
+        // Zoom follows Voyager outward (zoom locked); the guest keeps the angle.
+        aimZoom(fitDistance(Math.max(12, distanceAu(this.craftPos("voyager1")) * 1.15)));
       }
       // Layers follow the CAMERA, not the chapter, so the ladder and free
       // pinch-zoom reveal them too. viewR = radius (au) framed on screen.

@@ -188,6 +188,19 @@ export function aimTo(s: Shot): void {
   write(s, false);
 }
 
+/**
+ * Follow a growing scene by ZOOM only: writes targetCamera.zoom and leaves
+ * lat/lng/rotation alone, so the guest can orbit freely while the journey
+ * plays. Written every frame, it also acts as the zoom lock (a pinch or wheel
+ * is overwritten on the next frame). The engine eases the view toward it.
+ */
+export function aimZoom(distanceAu: number): void {
+  if (flight) { return; }
+  const r = rc();
+  if (!r) { return; }
+  r.targetCamera.zoom = clampZoom(((distanceAu - 1e-6) * 9) / 4);
+}
+
 export function cancelFlight(): void {
   if (flight) { cancelAnimationFrame(flight.raf); flight = null; }
 }
