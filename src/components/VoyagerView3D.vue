@@ -438,9 +438,9 @@ export default defineComponent({
         }
       }
       rt.momentT0 = performance.now();
-      const gc = eclXYZ(266.84, -5.54, 1.687e9 * 0.42);
+      // Centered on the Sun: the map is drawn FROM here. Frame the farthest pulsar (~4 kpc = 8.3e8 au).
       const { lat, lng } = viewFromEcliptic([-0.7128, 0.4469, 0.466]);
-      await flyTo({ target: gc, distanceAu: fitDistance(1.25e9), lat, lng, rotation: 0 }, 3600);
+      await flyTo({ target: [0, 0, 0], distanceAu: fitDistance(9.5e8), lat, lng, rotation: 0 }, 3600);
     },
 
     /** Voyager 1 meets Gliese 445: a straight-line fast-forward to closest approach. */
