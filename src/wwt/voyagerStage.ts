@@ -93,6 +93,20 @@ export function viewFromEcliptic(fromEcl: Vec3): { lat: number; lng: number } {
   return latLngFor([w[0] / n, w[1] / n, w[2] / n]);
 }
 
+/**
+ * The `rotation` that puts an ecliptic up-vector on screen-up for a camera at
+ * lat/lng (sol sunStage.rollFor: lookUp = sin(-rot) e1 + cos(-rot) e2).
+ */
+export function rollForUp(lat: number, lng: number, upEcl: Vec3): number {
+  const la = (lat * Math.PI) / 180, ln = (lng * Math.PI) / 180;
+  const up = eclToWwt(upEcl);
+  const e1: Vec3 = [Math.cos(ln), 0, Math.sin(ln)];
+  const e2: Vec3 = [Math.sin(la) * Math.sin(ln), Math.cos(la), -Math.sin(la) * Math.cos(ln)];
+  const a = up[0] * e1[0] + up[1] * e1[1] + up[2] * e1[2];
+  const b = up[0] * e2[0] + up[1] * e2[1] + up[2] * e2[2];
+  return -Math.atan2(a, b);
+}
+
 function pin(cam: MutableCamera, targetEcl: Vec3): void {
   cam.target = SS_CUSTOM;
   cam.targetReferenceFrame = "";

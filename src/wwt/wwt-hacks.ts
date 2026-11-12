@@ -8,7 +8,19 @@
 // anyway for one obvious home. This module is imported by the 3D async chunk
 // only, before <WorldWideTelescope> is created.
 
+import * as wwtEngine from "@wwtelescope/engine";
 import { WWTControl } from "@wwtelescope/engine";
+
+// Voyager: WWT's own flat galaxy image (Grids.drawGalaxyImage, drawn beyond
+// ~2.6e7 au camera distance when solarSystemMilkyWay is on) would double-expose
+// our 3D Milky Way (src/three/galaxy). Turning the SETTING off would also kill
+// the near-Sun sky backdrop, so only the draw call is replaced. `Grids` is
+// exported by the bundle but absent from the engine's .d.ts.
+// eslint-disable-next-line @typescript-eslint/naming-convention -- engine export name
+const engineGrids = (wwtEngine as unknown as { Grids?: { drawGalaxyImage?: () => void } }).Grids;
+if (engineGrids && typeof engineGrids.drawGalaxyImage === "function") {
+  engineGrids.drawGalaxyImage = function () { /* replaced by src/three/galaxy */ };
+}
 
 import { orbitByPixels } from "./voyagerStage";
 

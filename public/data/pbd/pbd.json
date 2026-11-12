@@ -1,0 +1,157 @@
+{
+ "schema": "voyager.pbd/1",
+ "utc": "1990-02-14T04:48:00Z",
+ "image": "pbd/pale-blue-dot.jpg",
+ "width_px": 1332,
+ "height_px": 1318,
+ "fov_deg_x": 0.352979,
+ "fov_deg_y": 0.349269,
+ "projection": "gnomonic (pinhole); image centre = center_dir_ecl; px origin top-left, y down, continuous coords (pixel i spans [i, i+1))",
+ "tan_per_px": 4.6251225e-06,
+ "earth_px": [
+  792.23,
+  685.03
+ ],
+ "earth_uv": [
+  0.59477,
+  0.51975
+ ],
+ "v1_au": [
+  -15.741593742,
+  -30.057501221,
+  21.857221222
+ ],
+ "earth_au": [
+  -0.812522882,
+  0.561183769,
+  1.3135e-05
+ ],
+ "v1_earth_distance_au": 40.47368,
+ "v1_earth_distance_km": 6054776000,
+ "v1_sun_distance_au": 40.36074,
+ "v1_ecliptic_lat_deg": 32.789,
+ "earth_sun_elongation_deg": 1.3907,
+ "view_dir_ecl": [
+  0.368858769,
+  0.756508597,
+  -0.540035139
+ ],
+ "center_dir_ecl": [
+  0.368653426,
+  0.756253056,
+  -0.54053304
+ ],
+ "up_ecl": [
+  -0.915140544,
+  0.397312655,
+  -0.068267404
+ ],
+ "right_ecl": [
+  0.163133184,
+  0.519830713,
+  0.838548505
+ ],
+ "sun_dir_ecl": [
+  0.390022434,
+  0.744721276,
+  -0.541546603
+ ],
+ "sun_image_dir_deg": 99.35,
+ "ecliptic_north_image_dir_deg": 4.66,
+ "roll_method": "derived-from-sun",
+ "roll_note": "No archived pointing exists for this frame (PDS VGISS ends 1989-09-29; NAIF Voyager 1 CK is bus-only). Image-up chosen so the real Sun direction projects along the measured sunward axis: the main scattered-light ray and the brightness gradient, toward the bottom as the PIA23645 caption states. Axis good to ~+-2 deg; the sign rests on the NASA caption (see alt).",
+ "alt_sun_toward_top": {
+  "note": "180-deg roll alternative, as the 1990 composite PIA00450 orients the Earth inset",
+  "center_dir_ecl": [
+   0.36906398,
+   0.756763869,
+   -0.539537047
+  ],
+  "up_ecl": [
+   0.915051739,
+   -0.397494789,
+   0.068397421
+  ],
+  "right_ecl": [
+   -0.162702468,
+   -0.518947338,
+   -0.839179103
+  ],
+  "ecliptic_north_image_dir_deg": -175.34
+ },
+ "measurements": {
+  "source_jpeg_px": [
+   5230,
+   5175
+  ],
+  "source_scale_vs_native": 7.8529,
+  "earth_px_source": [
+   3110.15,
+   2689.21
+  ],
+  "earth_px_native": [
+   396.12,
+   342.51
+  ],
+  "main_ray_native": "x = 453.43 + -0.1614 * y  (rms 1.33 px, 64 rows)",
+  "main_ray_offset_at_earth_px": 2.61,
+  "ray_axis_deg": 99.17,
+  "brightness_gradient_deg": 99.53,
+  "jpeg_bytes": 133752,
+  "jpeg_quality": 92
+ },
+ "validation": {
+  "earth_projects_to_px": [
+   792.234,
+   685.027
+  ],
+  "earth_error_px": 0.0,
+  "sun_projects_to_px": [
+   -60.4,
+   5864.3
+  ],
+  "sun_off_frame": true,
+  "sun_from_earth_image_dir_deg": 99.35,
+  "sun_distance_from_earth_native_px": 2624.5
+ },
+ "horizons_check": {
+  "horizons_v1_au": [
+   -15.7415948,
+   -30.0575073,
+   21.8572257
+  ],
+  "horizons_earth_au": [
+   -0.8125745,
+   0.5612051,
+   1.32e-05
+  ],
+  "baked_minus_horizons_v1_km": 1139,
+  "baked_minus_horizons_earth_km": 8354,
+  "earth_dir_error_arcsec": 0.293,
+  "light_time_corrected_earth_offset_arcsec": 11.46
+ },
+ "camera": {
+  "instrument": "Voyager 1 ISS narrow-angle camera (1500 mm f/8.5, 800x800 vidicon)",
+  "filters_exposures_s": {
+   "violet": 0.72,
+   "blue": 0.72,
+   "green": 0.48
+  },
+  "nac_fov_deg": 0.424,
+  "native_frame_crop_px": [
+   666,
+   659
+  ],
+  "crop_note": "PIA23645 is a 666x659 crop of the 800x800 frame (Figure A, native resolution); NASA's JPEG is it upsampled x7.853; this file is x2."
+ },
+ "credit": "NASA/JPL-Caltech (Pale Blue Dot Revisited, PIA23645; processing Kevin M. Gill)",
+ "license": "NASA/JPL mission imagery, not copyrighted (public domain in the US); JPL Image Use Policy: usable for any purpose without prior permission, with the caption's credit line",
+ "sources": [
+  "https://science.nasa.gov/photojournal/pale-blue-dot-revisited (PIA23645)",
+  "https://science.nasa.gov/photojournal/solar-system-portrait-earth-as-pale-blue-dot (PIA00452)",
+  "https://science.nasa.gov/photojournal/solar-system-portrait-view-of-the-sun-earth-and-venus (PIA00450)",
+  "https://naif.jpl.nasa.gov/pub/naif/VOYAGER/kernels/ik/vg1_issna_v02.ti",
+  "https://ssd.jpl.nasa.gov/api/horizons.api",
+  "https://www.jpl.nasa.gov/jpl-image-use-policy"
+ ]
+}

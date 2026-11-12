@@ -41,7 +41,12 @@ The `pipeline/` folder holds the Python generators. Run them in an env with nump
 
 - Plasma-wave audio: NASA and The University of Iowa (CC BY 4.0, https://space-audio.org/).
 - Mission imagery: NASA/JPL-Caltech.
-- Sky imagery: WorldWide Telescope / AAS.
+- Sky panorama: all-sky mosaic by Eckhard Slawik, as published by NOIRLab (credit NOIRLab/NSF/AURA/E. Slawik/M. Zamani, CC BY 4.0), tiled for WorldWide Telescope / AAS.
+- Pale Blue Dot: NASA/JPL-Caltech, *Pale Blue Dot Revisited* (PIA23645). It is placed in 3D along Voyager 1's 1990 line of sight; the camera roll is estimated from the sunlight direction.
+- Milky Way: ESA/Gaia/DPAC, Stefan Payne-Wardenaar, **CC BY-SA 3.0 IGO**. The files in `public/data/galaxy/` stay under that licence (see `ATTRIBUTION.txt`). Spiral arms after Reid et al. 2019.
+- Pulsar map: pulsars identified on the Golden Record cover as decoded by W. R. Johnston. Current values from the ATNF Pulsar Catalogue v2.9.0 (Manchester et al. 2005).
+- Future flybys: Bailer-Jones & Farnocchia 2019 (RNAAS 3, 59), with Gaia DR3 positions.
+- Golden Record cover: NASA/JPL.
 - Interactive: INTUITIVE® Planetarium at the U.S. Space & Rocket Center, with CosmicDS.
 - 3D overlay bridge: adapted from `three-wwt` (licence in `src/three/three-wwt/LICENSE`).
 

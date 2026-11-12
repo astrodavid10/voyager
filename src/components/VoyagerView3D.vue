@@ -28,6 +28,9 @@
         <span class="rung-t">{{ r.label }}<small>{{ r.short }}</small></span>
       </button>
     </nav>
+    <p v-if="galaxyCredit" class="v3d-credit">
+      Milky Way image: ESA/Gaia/DPAC, Stefan Payne-Wardenaar, CC BY-SA 3.0 IGO
+    </p>
     <div v-if="!ready && !failed" class="v3d-cover"><loading-record /></div>
     <div v-if="failed" class="v3d-cover v3d-failed">
       <p>The 3D view could not start on this device or network.</p>
@@ -57,15 +60,16 @@ import {
   positionAt, sampleIndexAt,
 } from "../data/ephem";
 import { Projected, ProjectTarget, projectTargets } from "../three/project";
-import type { GalaxyLayer } from "../three/galaxy";
+import type { GalaxyLabel, GalaxyLayer } from "../three/galaxy";
 import { createOortPoints } from "../three/oortPoints";
+import { PaleBlueDot, createPaleBlueDot } from "../three/paleBlueDot";
 import { createShellMaterial } from "../three/shellMaterial";
 import { ThreeStage, createThreeStage } from "../three/stage";
 import { installSunGestures, type SunGestures } from "../wwt/gestures";
 import { installHiDpiCanvas } from "../wwt/wwt-hacks";
 import {
   Shot, StageHost, aimTo, currentDistanceAu, currentShot, fitDistance, flyTo, initVoyagerStage, liveTargetEcl,
-  viewFromEcliptic,
+  rollForUp, viewFromEcliptic,
 } from "../wwt/voyagerStage";
 
 let engineInstalled = false;
@@ -104,6 +108,11 @@ interface Runtime {
   tidal: Group | null;
   oort: Points | null;
   galaxy: GalaxyLayer | null;
+  galaxyLabels: Record<string, GalaxyLabel>;
+  pbd: PaleBlueDot | null;
+  pbdAlpha: number;
+  lastFadeMs: number;
+  lastTimeSync: number;
   targets: ProjectTarget[];
   projected: Projected[];
   timer: number;
@@ -119,6 +128,8 @@ export default defineComponent({
     chapter: { type: String, required: true },
     sceneMs: { type: Number, required: true },
     shape: { type: String as PropType<"comet" | "croissant" | "bubble">, default: "comet" },
+    /** Pale Blue Dot moment (journey chapter): fly to Voyager's 1990 sightline. */
+    pbd: { type: Boolean, default: false },
   },
 
   emits: ["ready", "failed"],
@@ -132,11 +143,12 @@ export default defineComponent({
       pins: [] as Pin[],
       ladder: LADDER.map((r) => ({ ...r, short: r.au >= 1000 ? `${(r.au / 1000).toLocaleString()}k au` : `${r.au} au` })),
       ladderNowPct: 0,
+      galaxyCredit: false,
       vw: window.innerWidth,
       frame: 0,
       rt: markRaw({
         stage: null, gestures: null, eph: null, trails: {}, targets: [], projected: [],
-        world: null, helio: null, offset: [0, 0, 0], shellMats: {}, tidal: null, oort: null, galaxy: null,
+        world: null, helio: null, offset: [0, 0, 0], shellMats: {}, tidal: null, oort: null, galaxy: null, galaxyLabels: {}, pbd: null, pbdAlpha: 0, lastFadeMs: 0, lastTimeSync: 0,
         timer: 0, destroyed: false,
       } as Runtime),
     };
@@ -145,6 +157,7 @@ export default defineComponent({
   watch: {
     chapter() { void this.frameChapter(false); },
     shape() { /* weights are eased in tick() */ },
+    pbd(on: boolean) { void (on ? this.showPbd() : this.frameChapter(false)); },
   },
 
   async mounted() {
@@ -202,6 +215,15 @@ export default defineComponent({
     /** Distance ladder: frame the Sun out to this radius (AUDIT-UI #8). */
     flyRung(au: number): void {
       const s = currentShot();
+      if (au >= 1e8) {
+        // Galaxy: centre between the Sun and the Galactic centre (8.178 kpc =
+        // 1.687e9 au toward ecliptic 266.84, -5.54), seen obliquely from the
+        // galactic NORTH side (NGP at ecliptic 180.02, +29.81).
+        const gc = eclXYZ(266.84, -5.54, 1.687e9 * 0.5);
+        const { lat, lng } = viewFromEcliptic([-0.7128, 0.4469, 0.466]);
+        void flyTo({ target: gc, distanceAu: fitDistance(au * 1.1), lat, lng, rotation: 0 }, 3600);
+        return;
+      }
       void flyTo({ target: [0, 0, 0], distanceAu: fitDistance(au * 1.25), lat: s.lat, lng: s.lng, rotation: 0 }, 2600);
     },
 
@@ -220,6 +242,7 @@ export default defineComponent({
         }
       }
       this.ladderNowPct = 100 - pct; // far is up
+      this.galaxyCredit = !!this.rt.galaxy && viewR > 3e7;
     },
 
     // ── camera ───────────────────────────────────────────────────────
@@ -257,6 +280,33 @@ export default defineComponent({
         return { target: mid, distanceAu: fitDistance(150), lat, lng };
       }
       }
+    },
+
+    /**
+     * Pale Blue Dot: first stand just behind Voyager 1 (Feb 1990) looking home,
+     * then glide down its sightline to Earth while the photo fades in. On the
+     * sightline there is no parallax, so Earth stays on its pixel throughout.
+     */
+    async showPbd(): Promise<void> {
+      const rt = this.rt;
+      if (!rt.pbd) {
+        try {
+          rt.pbd = markRaw(await createPaleBlueDot("./data/"));
+          rt.world?.add(rt.pbd.mesh);
+        } catch (err) {
+          console.error("[VoyagerView3D] Pale Blue Dot failed:", err);
+          return;
+        }
+      }
+      const d = rt.pbd.data;
+      const e = d.earth_au, v = d.v1_au;
+      const back: Vec3 = [v[0] - e[0], v[1] - e[1], v[2] - e[2]];
+      const { lat, lng } = viewFromEcliptic(back);
+      const rotation = rollForUp(lat, lng, d.up_ecl);
+      const dist = Math.hypot(back[0], back[1], back[2]);
+      await flyTo({ target: e, distanceAu: dist + 8, lat, lng, rotation }, 3200);
+      if (!this.pbd) { return; }
+      await flyTo({ target: e, distanceAu: fitDistance(rt.pbd.halfHeightAu * 1.7), lat, lng, rotation }, 4200);
     },
 
     async frameChapter(instant: boolean): Promise<void> {
@@ -386,6 +436,15 @@ export default defineComponent({
           lite: new URLSearchParams(location.search).get("galaxy") === "lite" || (mem !== undefined && mem <= 4),
         });
         rt.galaxy = g ? markRaw(g) : null;
+        if (g) {
+          // Galaxy anchor labels become ordinary pins (index-aligned with targets).
+          for (const l of g.labels()) {
+            rt.galaxyLabels[`gx-${l.id}`] = l;
+            this.pins.push({ id: `gx-${l.id}`, kind: "galaxy", label: l.label, sub: l.sub ?? "",
+              color: l.kind === "sun" ? "#ffd166" : "#cfe3ff", x: 0, y: 0, visible: false });
+            rt.targets.push({ id: `gx-${l.id}`, position: new Vector3() });
+          }
+        }
       } catch (err) {
         console.error("[VoyagerView3D] galaxy layer failed:", err);
       }
@@ -443,7 +502,20 @@ export default defineComponent({
         const t = rt.trails[id];
         t.geom.setDrawRange(0, sampleIndexAt(eph.bodies[id], ms) + 1);
       }
-      if (this.chapter === "journey") {
+      // Keep WWT's own planets (and orbits) on the scene date: ~10 Hz is plenty.
+      if (performance.now() - rt.lastTimeSync > 100) {
+        rt.lastTimeSync = performance.now();
+        (this as unknown as { setTime: (d: Date) => void }).setTime(new Date(ms));
+      }
+      if (rt.pbd) {
+        // Time-based fade (frame rate varies a lot on phones): ~2.5 s in, ~0.6 s out.
+        const now = performance.now();
+        const dt = Math.min(0.1, (now - (rt.lastFadeMs || now)) / 1000);
+        rt.lastFadeMs = now;
+        rt.pbdAlpha = this.pbd ? Math.min(1, rt.pbdAlpha + dt / 2.5) : Math.max(0, rt.pbdAlpha - dt / 0.6);
+        rt.pbd.setOpacity(rt.pbdAlpha);
+      }
+      if (this.chapter === "journey" && !this.pbd) {
         const r = Math.max(12, distanceAu(this.craftPos("voyager1")) * 1.15);
         const s = this.shotFor("journey");
         s.distanceAu = fitDistance(r);
@@ -468,6 +540,7 @@ export default defineComponent({
         }
         if (p.id === "acen") { pos = eclXYZ(239.5, -42.6, 277900); }
         if (p.id === "gc") { pos = eclXYZ(266.84, -5.54, 283157); }
+        if (p.kind === "galaxy") { pos = rt.galaxyLabels[p.id].position; }
         tgt.position.set(pos[0] - off[0], pos[1] - off[1], pos[2] - off[2]);
       }
       const w = window.innerWidth, h = window.innerHeight;
@@ -476,9 +549,19 @@ export default defineComponent({
         const p = this.pins[i], q = rt.projected[i];
         let vis = !!q?.visible;
         if (p.kind === "crossing") { vis = vis && showCrossings; }
-        if (p.id === "earth") { vis = vis && this.chapter === "journey" && distanceAu(this.craftPos("voyager1")) < 25; }
+        if (p.id === "earth") {
+          vis = vis && this.chapter === "journey" && (this.pbd || distanceAu(this.craftPos("voyager1")) < 25);
+          p.label = "Earth";
+          p.sub = this.pbd ? "14 Feb 1990" : "";
+        }
         if (p.kind === "star") { vis = vis && viewR > 60000; }
         if (far && (p.id === "sun" || p.id === "voyager2")) { vis = false; }
+        if (p.kind === "galaxy") {
+          const l = rt.galaxyLabels[p.id];
+          vis = vis && viewR >= l.minViewRAu && viewR <= l.maxViewRAu;
+        } else if (viewR > 1e6) {
+          vis = false; // galactic scale: the galaxy's own labels take over
+        }
         p.x = q ? q.xCss : 0; p.y = q ? q.yCss : 0; p.visible = vis;
         if (p.kind === "craft" && far) {
           p.label = p.id === "voyager1" ? "The Sun, Earth and Voyager 1 are all here" : p.label;
@@ -554,6 +637,11 @@ export type { EngineSetting };
   .ladder { width: 96px; .rung-t { font-size: 12px; small { display: none; } } }
 }
 @media (min-width: 900px) { .ladder { bottom: 40px; top: 120px; } }
+.v3d-credit {
+  position: absolute; z-index: 5; left: 12px; bottom: calc(44vh + 14px); margin: 0; max-width: 60vw;
+  font-size: 12px; color: #b9bfe6; text-shadow: 0 1px 3px #000; pointer-events: none;
+}
+@media (min-width: 900px) { .v3d-credit { bottom: 12px; left: 180px; } }
 .v3d-cover {
   position: absolute; inset: 0; display: grid; place-items: center; align-content: center; gap: 12px;
   background: #05030f; color: #cfd6ff; font-size: 16px; text-align: center; padding: 24px;

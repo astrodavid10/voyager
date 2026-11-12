@@ -95,4 +95,5 @@ export const LADDER = [
   { id: "inner-oort", label: "Inner Oort", au: 2000 },
   { id: "outer-oort", label: "Outer Oort", au: 100000 },
   { id: "edge", label: "Gravity's edge", au: 283000 },
+  { id: "galaxy", label: "Milky Way", au: 3.0e9 },
 ];

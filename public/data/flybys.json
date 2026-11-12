@@ -1,0 +1,406 @@
+{
+ "schema": "voyager.flybys/1",
+ "generated_utc": "2026-11-12T05:00:27Z",
+ "frame": "heliocentric ecliptic J2000, au (same as ephem/*.bin); Sun fixed at origin",
+ "epoch": "2026-11-11",
+ "model": "position(t) = r0_au + v_au_per_yr * t, t in Julian years from epoch (negative = past)",
+ "units": {
+  "au_per_ly": 63241.077084,
+  "au_per_pc": 206264.806,
+  "kms_to_au_per_yr": 0.2109495265696987
+ },
+ "bodies": [
+  {
+   "id": "voyager1",
+   "kind": "spacecraft",
+   "name": "Voyager 1",
+   "color": "#E69F00",
+   "r0_au": [
+    -32.212,
+    -137.1469,
+    99.228
+   ],
+   "v_au_per_yr": [
+    -0.426553,
+    -2.818056,
+    2.037388
+   ],
+   "v_kms": [
+    -2.02206,
+    -13.35891,
+    9.65818
+   ],
+   "speed_kms": 16.6081,
+   "dir_unit": [
+    -0.1217515,
+    -0.8043602,
+    0.5815335
+   ],
+   "dir_ecl_lon_lat_deg": [
+    261.393,
+    35.558
+   ],
+   "derivation": "hyperbolic asymptote of the last baked state (2035-12-30, r = 204.79 au, v = 16.867 km/s, e = 3.692); GM = Sun + planets. Same calculation 10 yr earlier: v_inf 16.6027 km/s, direction differs by 0.0102 deg.",
+   "check_bailer_jones_2019": {
+    "speed_kms": 16.6048,
+    "dir_ecl_lon_lat_deg": [
+     261.436,
+     35.548
+    ],
+    "angle_to_ours_deg": 0.037,
+    "note": "converted from their barycentric ICRF RA/Dec"
+   }
+  },
+  {
+   "id": "voyager2",
+   "kind": "spacecraft",
+   "name": "Voyager 2",
+   "color": "#56B4E9",
+   "r0_au": [
+    39.9898,
+    -105.6855,
+    -89.9713
+   ],
+   "v_au_per_yr": [
+    0.861987,
+    -1.909776,
+    -2.326827
+   ],
+   "v_kms": [
+    4.08622,
+    -9.05324,
+    -11.03026
+   ],
+   "speed_kms": 14.8433,
+   "dir_unit": [
+    0.2752898,
+    -0.6099191,
+    -0.7431112
+   ],
+   "dir_ecl_lon_lat_deg": [
+    294.292,
+    -47.997
+   ],
+   "derivation": "hyperbolic asymptote of the last baked state (2035-12-30, r = 173.43 au, v = 15.184 km/s, e = 6.273); GM = Sun + planets. Same calculation 10 yr earlier: v_inf 14.8501 km/s, direction differs by 0.0017 deg.",
+   "check_bailer_jones_2019": {
+    "speed_kms": 14.855,
+    "dir_ecl_lon_lat_deg": [
+     294.348,
+     -47.982
+    ],
+    "angle_to_ours_deg": 0.04,
+    "note": "converted from their barycentric ICRF RA/Dec"
+   }
+  },
+  {
+   "id": "gliese445",
+   "kind": "star",
+   "name": "Gliese 445",
+   "aka": "AC +79 3888, GJ 445, Gaia DR3 1129149723913123456",
+   "sptype": "M4.0V",
+   "r0_au": [
+    -212103.1,
+    432992.2,
+    970303.9
+   ],
+   "v_au_per_yr": [
+    6.86884,
+    -12.92778,
+    -18.99509
+   ],
+   "v_kms": [
+    32.5615,
+    -61.2838,
+    -90.0457
+   ],
+   "speed_kms": 113.685,
+   "dist_now_ly": 17.1328,
+   "ecl_lon_lat_deg": [
+    116.0981,
+    63.5769
+   ],
+   "gaia_dr3": {
+    "ra": 176.9394079814786,
+    "dec": 78.69329745305299,
+    "parallax": 190.32514271529305,
+    "parallax_error": 0.019362431,
+    "pmra": 748.4182886031707,
+    "pmdec": 480.80430000482306,
+    "radial_velocity": -111.504585,
+    "radial_velocity_error": 0.15323243
+   },
+   "gaia_ref_epoch": 2016.0,
+   "closest_to_sun_linear": {
+    "t_years": 44313.0,
+    "dist_ly": 3.34,
+    "dist_pc": 1.024
+   }
+  },
+  {
+   "id": "ross248",
+   "kind": "star",
+   "name": "Ross 248",
+   "aka": "GJ 905, HH Andromedae, Gaia DR3 1926461164913660160",
+   "sptype": "M5.0V",
+   "r0_au": [
+    465935.0,
+    146788.1,
+    431158.5
+   ],
+   "v_au_per_yr": [
+    -8.13675,
+    -5.03654,
+    -14.13062
+   ],
+   "v_kms": [
+    -38.572,
+    -23.8756,
+    -66.9858
+   ],
+   "speed_kms": 80.901,
+   "dist_now_ly": 10.3029,
+   "ecl_lon_lat_deg": [
+    17.4865,
+    41.4316
+   ],
+   "gaia_dr3": {
+    "ra": 355.4800152581559,
+    "dec": 44.170375700747755,
+    "parallax": 316.48118678226916,
+    "parallax_error": 0.044448785,
+    "pmra": 112.52746493350043,
+    "pmdec": -1591.6497618145506,
+    "radial_velocity": -77.289825,
+    "radial_velocity_error": 0.18532437
+   },
+   "gaia_ref_epoch": 2016.0,
+   "closest_to_sun_linear": {
+    "t_years": 36474.0,
+    "dist_ly": 3.045,
+    "dist_pc": 0.933
+   }
+  }
+ ],
+ "encounters": [
+  {
+   "craft": "voyager1",
+   "star": "Gliese 445",
+   "t_years": 44048.0,
+   "year_ce": 46075.0,
+   "min_dist_ly": 1.8713,
+   "min_dist_au": 118344.0,
+   "min_dist_pc": 0.5737,
+   "v_rel_kms": 115.9,
+   "craft_sun_dist_ly_then": 2.443,
+   "craft_nearer_star_than_sun_from_t_years": 40767.0,
+   "source": "this pipeline: straight-line model, t from 2026-11-11; Gaia DR3 (ESA Gaia archive TAP, live); craft = asymptote of our Horizons bake"
+  },
+  {
+   "craft": "voyager2",
+   "star": "Ross 248",
+   "t_years": 42342.0,
+   "year_ce": 44369.0,
+   "min_dist_ly": 1.7402,
+   "min_dist_au": 110055.0,
+   "min_dist_pc": 0.5336,
+   "v_rel_kms": 71.91,
+   "craft_sun_dist_ly_then": 2.099,
+   "craft_nearer_star_than_sun_from_t_years": 38887.0,
+   "source": "this pipeline: straight-line model, t from 2026-11-11; Gaia DR3 (ESA Gaia archive TAP, live); craft = asymptote of our Horizons bake"
+  },
+  {
+   "craft": "voyager1",
+   "star": "Proxima Centauri",
+   "t_years": 16700.0,
+   "t_years_5_95": [
+    16500.0,
+    16900.0
+   ],
+   "min_dist_ly": 3.496,
+   "min_dist_au": 221100.0,
+   "min_dist_pc": 1.072,
+   "min_dist_pc_5_95": [
+    1.061,
+    1.083
+   ],
+   "v_rel_kms": 43.2,
+   "source": "Bailer-Jones & Farnocchia 2019, RNAAS 3, 59 (arXiv:1912.03503 Table 1); Gaia DR2, Galactic potential; t from ~2019",
+   "note": "first encounter < ~1 pc"
+  },
+  {
+   "craft": "voyager1",
+   "star": "TYC 3135-52-1",
+   "t_years": 302700.0,
+   "t_years_5_95": [
+    299500.0,
+    306100.0
+   ],
+   "min_dist_ly": 0.965,
+   "min_dist_au": 61100.0,
+   "min_dist_pc": 0.296,
+   "min_dist_pc_5_95": [
+    0.289,
+    0.302
+   ],
+   "v_rel_kms": 46.5,
+   "source": "Bailer-Jones & Farnocchia 2019, RNAAS 3, 59 (arXiv:1912.03503 Table 1); Gaia DR2, Galactic potential; t from ~2019",
+   "note": "closest; star sits above the main sequence - possible binary, astrometry may be unreliable"
+  },
+  {
+   "craft": "voyager1",
+   "star": "HD 28343",
+   "t_years": 487500.0,
+   "t_years_5_95": [
+    483200.0,
+    492300.0
+   ],
+   "min_dist_ly": 1.305,
+   "min_dist_au": 82500.0,
+   "min_dist_pc": 0.4,
+   "min_dist_pc_5_95": [
+    0.395,
+    0.407
+   ],
+   "v_rel_kms": 22.5,
+   "source": "Bailer-Jones & Farnocchia 2019, RNAAS 3, 59 (arXiv:1912.03503 Table 1); Gaia DR2, Galactic potential; t from ~2019",
+   "note": "third closest"
+  },
+  {
+   "craft": "voyager1",
+   "star": "Gaia DR2 2091429484365218432",
+   "t_years": 3405300.0,
+   "t_years_5_95": [
+    3224400.0,
+    3595700.0
+   ],
+   "min_dist_ly": 1.279,
+   "min_dist_au": 80900.0,
+   "min_dist_pc": 0.392,
+   "min_dist_pc_5_95": [
+    0.229,
+    0.54
+   ],
+   "v_rel_kms": 45.9,
+   "source": "Bailer-Jones & Farnocchia 2019, RNAAS 3, 59 (arXiv:1912.03503 Table 1); Gaia DR2, Galactic potential; t from ~2019",
+   "note": "second closest"
+  },
+  {
+   "craft": "voyager1",
+   "star": "Gliese 445",
+   "t_years": 44000.0,
+   "t_years_5_95": [
+    44000.0,
+    44100.0
+   ],
+   "min_dist_ly": 1.875,
+   "min_dist_au": 118600.0,
+   "min_dist_pc": 0.575,
+   "min_dist_pc_5_95": [
+    0.574,
+    0.576
+   ],
+   "v_rel_kms": 116.0,
+   "source": "Bailer-Jones & Farnocchia 2019, RNAAS 3, 59 (arXiv:1912.03503 Table 1); Gaia DR2, Galactic potential; t from ~2019",
+   "note": "earliest encounter within 1 pc; the NASA 'AC+79 3888' flyby"
+  },
+  {
+   "craft": "voyager2",
+   "star": "Proxima Centauri",
+   "t_years": 20300.0,
+   "t_years_5_95": [
+    20200.0,
+    20300.0
+   ],
+   "min_dist_ly": 2.864,
+   "min_dist_au": 181100.0,
+   "min_dist_pc": 0.878,
+   "min_dist_pc_5_95": [
+    0.867,
+    0.89
+   ],
+   "v_rel_kms": 46.3,
+   "source": "Bailer-Jones & Farnocchia 2019, RNAAS 3, 59 (arXiv:1912.03503 Table 1); Gaia DR2, Galactic potential; t from ~2019",
+   "note": "first encounter"
+  },
+  {
+   "craft": "voyager2",
+   "star": "Ross 248",
+   "t_years": 42000.0,
+   "t_years_5_95": [
+    41900.0,
+    42200.0
+   ],
+   "min_dist_ly": 1.725,
+   "min_dist_au": 109100.0,
+   "min_dist_pc": 0.529,
+   "min_dist_pc_5_95": [
+    0.528,
+    0.531
+   ],
+   "v_rel_kms": 72.3,
+   "source": "Bailer-Jones & Farnocchia 2019, RNAAS 3, 59 (arXiv:1912.03503 Table 1); Gaia DR2, Galactic potential; t from ~2019",
+   "note": "closest; the NASA flyby"
+  },
+  {
+   "craft": "voyager2",
+   "star": "Gaia DR2 4370380741264455296",
+   "t_years": 2245600.0,
+   "t_years_5_95": [
+    2168400.0,
+    2334700.0
+   ],
+   "min_dist_ly": 1.82,
+   "min_dist_au": 115100.0,
+   "min_dist_pc": 0.558,
+   "min_dist_pc_5_95": [
+    0.319,
+    0.843
+   ],
+   "v_rel_kms": 69.9,
+   "source": "Bailer-Jones & Farnocchia 2019, RNAAS 3, 59 (arXiv:1912.03503 Table 1); Gaia DR2, Galactic potential; t from ~2019",
+   "note": "second closest, though the star is now 160 pc away"
+  },
+  {
+   "craft": "voyager2",
+   "star": "h1 Sgr",
+   "t_years": 1965400.0,
+   "t_years_5_95": [
+    1810800.0,
+    2141000.0
+   ],
+   "min_dist_ly": 2.309,
+   "min_dist_au": 146000.0,
+   "min_dist_pc": 0.708,
+   "min_dist_pc_5_95": [
+    0.48,
+    0.941
+   ],
+   "v_rel_kms": 40.9,
+   "source": "Bailer-Jones & Farnocchia 2019, RNAAS 3, 59 (arXiv:1912.03503 Table 1); Gaia DR2, Galactic potential; t from ~2019",
+   "note": "fourth closest; a delta Scuti star"
+  },
+  {
+   "craft": "voyager1",
+   "star": "Gliese 445",
+   "t_years": 40000,
+   "min_dist_ly": 1.6,
+   "min_dist_au": 101000.0,
+   "source": "NASA/JPL (classic, pre-Gaia): JPL Voyager 'Interstellar Mission' page (now offline; widely quoted): 'within 1.6 light years ... of AC+79 3888' in ~40,000 yr. NASA image article 'Reaching for the Stars' (2013-09-11) gives 1.7 ly."
+  },
+  {
+   "craft": "voyager2",
+   "star": "Ross 248",
+   "t_years": 40000,
+   "min_dist_ly": 1.7,
+   "min_dist_au": 108000.0,
+   "source": "NASA/JPL (classic, pre-Gaia): NASA/JPL Photojournal PIA22921 caption and JPL interstellar mission page: ~1.7 ly from Ross 248 in ~40,000 yr."
+  }
+ ],
+ "notes": [
+  "Gliese 445 does most of the travelling: it is falling toward the Sun at ~111 km/s (Gaia DR3 RV) while Voyager 1 recedes at 16.6 km/s. In ~44,000 yr the star itself passes ~1.0 pc (3.3 ly) from the Sun (our linear model; see bodies[].closest_to_sun_linear).",
+  "Gaia-era distances (Bailer-Jones & Farnocchia 2019): V1-Gliese 445 0.575 pc = 1.88 ly at 44.0 kyr; V2-Ross 248 0.529 pc = 1.73 ly at 42.0 kyr. NASA's classic 1.6 / 1.7 ly at ~40 kyr are close; V1's is ~0.3 ly too small.",
+  "Neither flyby is Voyager's closest. With Gaia DR2, V1's closest known star is TYC 3135-52-1 (0.30 pc, ~303 kyr; possibly binary) and Proxima Centauri comes first for both craft (~1 pc at 17-20 kyr).",
+  "Our straight-line model (Gaia DR3, no Galactic gravity) reproduces Bailer-Jones & Farnocchia (Gaia DR2, Galactic potential) to <1% in distance and time for both flybys: over ~40 kyr these nearby stars barely feel the Galaxy, and the remaining differences are mostly DR2 -> DR3 astrometry.",
+  "The craft's r0 is its baked position on the epoch; the velocity is the asymptote (the craft are still slowing by ~0.3 km/s, a positional error of a few hundred au over 40 kyr, negligible against ~1e5 au)."
+ ]
+}

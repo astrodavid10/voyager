@@ -11,7 +11,7 @@ from pathlib import Path
 
 def main(argv=None):
     p = argparse.ArgumentParser(prog="pipeline")
-    p.add_argument("step", choices=["ephem", "helio", "tidal", "oort", "stars", "crossings", "all"])
+    p.add_argument("step", choices=["ephem", "helio", "tidal", "oort", "stars", "crossings", "pbd", "pulsars", "flybys", "all"])
     p.add_argument("--out", type=Path, default=Path("public/data"))
     a = p.parse_args(argv)
     a.out.mkdir(parents=True, exist_ok=True)

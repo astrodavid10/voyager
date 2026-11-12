@@ -6,6 +6,7 @@
         :chapter="chapter.id"
         :scene-ms="sceneMs"
         :shape="shape"
+        :pbd="pbd"
         @ready="viewReady = true"
       />
     </div>
@@ -28,9 +29,24 @@
       </div>
       <h2>{{ chapter.title }}</h2>
       <p v-if="chapter.id === 'today'" class="vy-body">{{ todayBody }}</p>
-      <p v-else-if="chapter.id === 'journey'" class="vy-body">
-        <strong class="vy-year">{{ sceneYear }}</strong> {{ journeyCaption || chapter.body }}
-      </p>
+      <template v-else-if="chapter.id === 'journey' && pbd">
+        <p class="vy-body">
+          <strong class="vy-year">14 Feb 1990</strong> Voyager 1 turned its camera back from 3.7 billion miles
+          away and photographed Earth: less than a pixel, caught in a ray of scattered sunlight. The photo is
+          placed exactly where its camera pointed; Earth sits on its dot.
+        </p>
+        <p class="vy-note">
+          “Look again at that dot. That's here. That's home. That's us.” Carl Sagan.
+          Image: NASA/JPL-Caltech, Pale Blue Dot Revisited (PIA23645). Camera roll estimated from the sunlight.
+        </p>
+        <button type="button" class="btn ghost vy-more" @click="endPbd">Continue the journey</button>
+      </template>
+      <template v-else-if="chapter.id === 'journey'">
+        <p class="vy-body">
+          <strong class="vy-year">{{ sceneYear }}</strong> {{ journeyCaption || chapter.body }}
+        </p>
+        <button type="button" class="btn ghost vy-more" @click="startPbd">See the Pale Blue Dot</button>
+      </template>
       <p v-else class="vy-body">{{ chapter.body }}</p>
 
       <div v-if="chapter.id === 'bubble'" class="vy-seg" role="radiogroup" aria-label="Heliosphere shape">
@@ -94,6 +110,8 @@ import {
 
 const JOURNEY_START = Date.parse("1977-08-20T00:00:00Z");
 const JOURNEY_SECONDS = 24;
+/** Pale Blue Dot: Voyager 1 narrow-angle frame, 1990-02-14 04:48 UTC (docs/RESEARCH-pbd.md). */
+const PBD_MS = Date.parse("1990-02-14T04:48:00Z");
 
 export default defineComponent({
   name: "App",
@@ -125,6 +143,7 @@ export default defineComponent({
       showData: false,
       playing: false,
       audio: null as HTMLAudioElement | null,
+      pbd: false,
       attract: false,
       attractFinale: false,
       attractLine: "",
@@ -197,17 +216,9 @@ export default defineComponent({
     "chapter.id"(id: string) {
       cancelAnimationFrame(this.raf);
       this.stopListen();
+      this.pbd = false;
       if (id === "journey") {
-        this.journeyT0 = performance.now();
-        this.sceneMs = JOURNEY_START;
-        const step = () => {
-          const f = Math.min(1, (performance.now() - this.journeyT0) / (JOURNEY_SECONDS * 1000));
-          // Ease-in: the planet years pass slower than the cruise years.
-          const e = f * f * (3 - 2 * f) * 0.6 + f * 0.4;
-          this.sceneMs = JOURNEY_START + (this.now - JOURNEY_START) * e;
-          if (f < 1) { this.raf = requestAnimationFrame(step); }
-        };
-        this.raf = requestAnimationFrame(step);
+        this.runJourney(JOURNEY_START, JOURNEY_SECONDS);
       } else {
         this.sceneMs = this.now;
       }
@@ -237,6 +248,28 @@ export default defineComponent({
   },
   methods: {
     go(i: number): void { this.index = i; },
+    /** Play the journey from `fromMs` to now over `seconds` (eased: planet years slower). */
+    runJourney(fromMs: number, seconds: number): void {
+      cancelAnimationFrame(this.raf);
+      this.journeyT0 = performance.now();
+      this.sceneMs = fromMs;
+      const step = () => {
+        const f = Math.min(1, (performance.now() - this.journeyT0) / (seconds * 1000));
+        const e = f * f * (3 - 2 * f) * 0.6 + f * 0.4;
+        this.sceneMs = fromMs + (this.now - fromMs) * e;
+        if (f < 1) { this.raf = requestAnimationFrame(step); }
+      };
+      this.raf = requestAnimationFrame(step);
+    },
+    startPbd(): void {
+      cancelAnimationFrame(this.raf);
+      this.sceneMs = PBD_MS;
+      this.pbd = true;
+    },
+    endPbd(): void {
+      this.pbd = false;
+      this.runJourney(PBD_MS, 14);
+    },
 
     // ── Lobby kiosk (?kiosk=1) ───────────────────────────────────────
     // Sol's kiosk runtime (idle watcher, guards, nightly reload) plus a Voyager

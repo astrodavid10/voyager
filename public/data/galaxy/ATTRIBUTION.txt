@@ -1,0 +1,8 @@
+milkyway-2k.jpg, milkyway-1k.jpg
+  Downsampled, re-encoded copies of "The best Milky Way map, by Gaia"
+  (artist's impression, face-on view), high-contrast 4k version.
+  Credit: ESA/Gaia/DPAC, Stefan Payne-Wardenaar
+  Licence: CC BY-SA 3.0 IGO  https://creativecommons.org/licenses/by-sa/3.0/igo/
+  Source: https://www.esa.int/ESA_Multimedia/Images/2025/01/The_best_Milky_Way_map_by_Gaia
+  Changes: resized to 2048 px and 1024 px and re-compressed (pipeline/galaxy.py).
+  These adapted files are shared under the same licence, CC BY-SA 3.0 IGO.
