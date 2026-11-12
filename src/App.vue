@@ -68,6 +68,14 @@
         </button>
       </nav>
     </section>
+
+    <template v-if="kioskMode">
+      <div v-if="attract" class="vy-attract" aria-hidden="true">
+        <p class="vy-attract-line">{{ attractLine }}</p>
+        <p class="vy-attract-touch">Touch to explore</p>
+      </div>
+      <kiosk-qr :url="kioskHomeUrl" :big="attract && attractFinale" />
+    </template>
   </main>
 </template>
 
@@ -75,6 +83,9 @@
 import { defineAsyncComponent, defineComponent } from "vue";
 
 import BrandMark from "./components/BrandMark.vue";
+import {
+  KIOSK_IDLE_MS, KIOSK_RELOAD_HOUR, createIdleWatcher, installKioskGuards, scheduleDailyReload,
+} from "./kiosk/kiosk";
 import { CHAPTERS, JOURNEY_EVENTS } from "./data/chapters";
 import {
   Ephemeris, formatLightTime, formatMiles, lightHoursFromEarth, loadEphemeris, nowMs,
@@ -90,6 +101,7 @@ export default defineComponent({
     "brand-mark": BrandMark,
     "voyager-view-3d": defineAsyncComponent(() => import("./components/VoyagerView3D.vue")),
     "crossing-chart": defineAsyncComponent(() => import("./components/CrossingChart.vue")),
+    "kiosk-qr": defineAsyncComponent(() => import("./components/KioskQr.vue")),
   },
   props: {
     kioskMode: { type: Boolean, default: false },
@@ -113,6 +125,11 @@ export default defineComponent({
       showData: false,
       playing: false,
       audio: null as HTMLAudioElement | null,
+      attract: false,
+      attractFinale: false,
+      attractLine: "",
+      attractTimers: [] as number[],
+      kioskCleanup: [] as (() => void)[],
     };
   },
   computed: {
@@ -149,7 +166,9 @@ export default defineComponent({
     journeyCaption(): string {
       let text = "";
       for (const e of JOURNEY_EVENTS) {
-        if (Date.parse(e.date + "T00:00:00Z") <= this.sceneMs) { text = e.text; }
+        // Show an event for ~4 years after it happens, then fall back to the body text.
+        const t = Date.parse(e.date + "T00:00:00Z");
+        if (t <= this.sceneMs && this.sceneMs - t < 4 * 365.25 * 86400000) { text = e.text; }
       }
       return text;
     },
@@ -188,6 +207,7 @@ export default defineComponent({
     } catch (err) {
       console.error("[App] ephemeris failed:", err);
     }
+    if (this.kioskMode) { this.initKiosk(); }
     // Start WWT only after the hook has painted.
     requestAnimationFrame(() => { this.startView = true; });
     window.setInterval(() => {
@@ -197,6 +217,56 @@ export default defineComponent({
   },
   methods: {
     go(i: number): void { this.index = i; },
+
+    // ── Lobby kiosk (?kiosk=1) ───────────────────────────────────────
+    // Sol's kiosk runtime (idle watcher, guards, nightly reload) plus a Voyager
+    // attract loop: a ~100 s walk through the chapters (AUDIT-UI kiosk script).
+    // ?kioskIdle=<seconds> shortens the idle timeout for testing.
+    initKiosk(): void {
+      const idleS = Number(new URLSearchParams(location.search).get("kioskIdle"));
+      const watcher = createIdleWatcher({
+        idleMs: idleS > 0 ? idleS * 1000 : KIOSK_IDLE_MS,
+        onIdle: () => this.startAttract(),
+        onActive: () => { if (this.attract) { this.stopAttract(); } },
+      });
+      watcher.start();
+      this.kioskCleanup.push(() => watcher.stop());
+      this.kioskCleanup.push(installKioskGuards({ onExternalLink: () => { /* no navigation on the kiosk */ } }));
+      this.kioskCleanup.push(scheduleDailyReload(KIOSK_RELOAD_HOUR, () => this.attract));
+    },
+    startAttract(): void {
+      this.stopListen();
+      this.attract = true;
+      const v1 = this.v1Hours !== null && this.v1Hours < 24
+        ? `Voyager 1 is ${formatLightTime(this.v1Hours)} of light from Earth, almost one light-day`
+        : "Voyager 1 is now more than one light-day from Earth";
+      const script: [number, () => void][] = [
+        [0, () => { this.attractFinale = false; this.shape = "comet"; this.index = 0; this.attractLine = v1; }],
+        [15, () => { this.index = 1; this.attractLine = "Launched in 1977. Still talking to us."; }],
+        [40, () => { this.index = 2; this.attractLine = "It left the Sun's bubble in 2012. Nobody knows the bubble's shape."; }],
+        [45, () => { this.shape = "croissant"; }],
+        [50, () => { this.shape = "bubble"; }],
+        [56, () => { this.shape = "comet"; this.index = 3; this.attractLine = "30,000 more years to cross the Oort cloud"; }],
+        [72, () => { this.index = 4; this.attractLine = "Out of the Sun's bubble. Not out of the solar system. Not even close."; }],
+        [88, () => { this.index = 0; this.attractFinale = true; this.attractLine = "Touch to explore, or take it home"; }],
+        [100, () => this.startAttract()],
+      ];
+      this.clearAttractTimers();
+      for (const [t, fn] of script) {
+        this.attractTimers.push(window.setTimeout(() => { if (this.attract) { fn(); } }, t * 1000));
+      }
+    },
+    stopAttract(): void {
+      this.clearAttractTimers();
+      this.attract = false;
+      this.attractFinale = false;
+      this.shape = "comet";
+      this.index = 0;
+    },
+    clearAttractTimers(): void {
+      this.attractTimers.forEach((t) => window.clearTimeout(t));
+      this.attractTimers = [];
+    },
     /**
      * Voyager 1 PWS interstellar plasma waves, hotlinked (CC BY 4.0, NASA /
      * University of Iowa; docs/RESEARCH-crossings.md). Opt-in, phone only,
