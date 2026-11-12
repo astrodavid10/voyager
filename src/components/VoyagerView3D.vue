@@ -28,7 +28,7 @@
         <span class="rung-t">{{ r.label }}<small>{{ r.short }}</small></span>
       </button>
     </nav>
-    <div v-if="!ready && !failed" class="v3d-cover">Loading the 3D view…</div>
+    <div v-if="!ready && !failed" class="v3d-cover"><loading-record /></div>
     <div v-if="failed" class="v3d-cover v3d-failed">
       <p>The 3D view could not start on this device or network.</p>
       <button type="button" class="btn" @click="retry">Try again</button>
@@ -50,6 +50,7 @@ import {
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 
 import { getAppHandle } from "../appHandle";
+import LoadingRecord from "./LoadingRecord.vue";
 import { CROSSINGS, LADDER } from "../data/chapters";
 import {
   Ephemeris, Vec3, distanceAu, formatLightTime, lightHoursFromEarth, loadEphemeris,
@@ -112,6 +113,7 @@ interface Runtime {
 export default defineComponent({
   name: "VoyagerView3D",
   extends: WWTAwareComponent,
+  components: { "loading-record": LoadingRecord },
 
   props: {
     chapter: { type: String, required: true },
@@ -334,16 +336,24 @@ export default defineComponent({
      * `_milkyWayBackground`, which it fills once with
      * getImagesetByName("Digitized Sky Survey (Color)") (engine 7.39, the
      * renderType 4 branch of WWTControl.render). Loading our WTML and setting
-     * that field swaps it. `?sky=dss` keeps the engine default.
+     * that field swaps it. `?sky=dss` keeps the engine default; `?sky=dsm` uses
+     * NASA's Deep Star Maps 2020 for an A/B comparison.
      */
     async useIauSky(): Promise<void> {
-      if (new URLSearchParams(location.search).get("sky") === "dss") { return; }
+      const sky = new URLSearchParams(location.search).get("sky");
+      if (sky === "dss") { return; }
       try {
-        const host = this as unknown as {
-          loadImageCollection: (p: { url: string; loadChildFolders?: boolean }) => Promise<unknown>;
-        };
-        await host.loadImageCollection({ url: new URL("iau-allsky.wtml", location.href).toString() });
-        const iset = WWTControl.singleton.getImagesetByName("Eckhard All Sky");
+        let name = "Eckhard All Sky";
+        if (sky === "dsm") {
+          // NASA SVS Deep Star Maps 2020, from WWT's own catalog (as in the Orion app).
+          name = "Deep Star Maps 2020";
+        } else {
+          const host = this as unknown as {
+            loadImageCollection: (p: { url: string; loadChildFolders?: boolean }) => Promise<unknown>;
+          };
+          await host.loadImageCollection({ url: new URL("iau-allsky.wtml", location.href).toString() });
+        }
+        const iset = WWTControl.singleton.getImagesetByName(name);
         if (iset) {
           (WWTControl.singleton as unknown as { _milkyWayBackground: unknown })._milkyWayBackground = iset;
           // WWT draws this backdrop at (1 - fade)/2, i.e. 50% at best. The
