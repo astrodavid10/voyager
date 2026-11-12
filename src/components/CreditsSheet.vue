@@ -20,7 +20,7 @@
           S. M. Krimigis; PLS: J. D. Richardson.
         </li>
         <li>Plasma-wave sound: NASA and The University of Iowa (CC BY 4.0, space-audio.org).</li>
-        <li>Pale Blue Dot: NASA/JPL-Caltech, <em>Pale Blue Dot Revisited</em> (PIA23645).</li>
+        <li>Pale Blue Dot: NASA/JPL-Caltech, <em>Pale Blue Dot Revisited</em> (PIA23645). Family Portrait: NASA/JPL-Caltech (PIA00450, PIA00451, PIA00453).</li>
         <li>
           Heliosphere: shaped after McComas et al. 2015 (IBEX), Kleimann et al. 2022, Opher et al. 2015/2020 and
           Dialynas et al. 2017, and fitted through Voyager's own crossings.

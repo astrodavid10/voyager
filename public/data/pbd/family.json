@@ -1,0 +1,747 @@
+{
+ "schema": "voyager.family/1",
+ "event": "Voyager 1 Solar System Portrait ('Family Portrait'), 1990-02-14",
+ "utc_note": "The Earth frames were taken at 04:48 UTC (NASA); the cameras were switched off at 05:22 UTC. Per-frame times for the other planets are not published in any source we could reach; all geometry is evaluated at 04:48. shift_if_3h_earlier_native_px gives the sensitivity.",
+ "frames": [
+  {
+   "planet": "Venus",
+   "utc": "1990-02-14T04:48:00Z",
+   "utc_note": "per-frame time not published; evaluated at the Earth-frame time",
+   "image": "pbd/family/venus.jpg",
+   "width_px": 180,
+   "height_px": 200,
+   "fov_deg_x": 0.05451,
+   "fov_deg_y": 0.06057,
+   "tan_per_px": 5.285854285714286e-06,
+   "planet_px": [
+    99.58,
+    111.65
+   ],
+   "planet_shape": "elongation 1.11",
+   "center_dir_ecl": [
+    0.374135393,
+    0.752473505,
+    -0.54203905
+   ],
+   "up_ecl": [
+    -0.91205571,
+    0.404355759,
+    -0.068196795
+   ],
+   "right_ecl": [
+    0.16786033,
+    0.519884645,
+    0.837581557
+   ],
+   "view_dir_ecl": [
+    0.374200079,
+    0.752474918,
+    -0.541992434
+   ],
+   "alt_sun_toward_top": {
+    "center_dir_ecl": [
+     0.374264763,
+     0.752476327,
+     -0.541945814
+    ],
+    "up_ecl": [
+     0.912009603,
+     -0.404448475,
+     0.068263569
+    ],
+    "right_ecl": [
+     -0.167822438,
+     -0.519808435,
+     -0.837636449
+    ]
+   },
+   "v1_au": [
+    -15.741593742,
+    -30.057501221,
+    21.857221222
+   ],
+   "planet_au": [
+    -0.680297121,
+    0.229098333,
+    0.042397372
+   ],
+   "v1_planet_distance_au": 40.2493,
+   "elongation_from_sun_deg": 1.01,
+   "shift_if_3h_earlier_native_px": 0.9,
+   "roll_method": "derived-from-sun (same twist as the Earth frame, 0.4 deg away; PIA00450)",
+   "roll_note": null,
+   "validation": {
+    "planet_reprojects_to_px": [
+     99.58,
+     111.655
+    ],
+    "error_px": 0.0,
+    "sun_px": [
+     -89.9,
+     3441.2
+    ]
+   },
+   "jpeg_bytes": 10047
+  },
+  {
+   "planet": "Earth",
+   "utc": "1990-02-14T04:48:00Z",
+   "utc_note": "verified (NASA PIA23645)",
+   "image": "pbd/family/earth.jpg",
+   "width_px": 180,
+   "height_px": 200,
+   "fov_deg_x": 0.05451,
+   "fov_deg_y": 0.06057,
+   "tan_per_px": 5.285854285714286e-06,
+   "planet_px": [
+    89.93,
+    101.74
+   ],
+   "planet_shape": "elongation 1.13",
+   "center_dir_ecl": [
+    0.368850391,
+    0.75651246,
+    -0.540035449
+   ],
+   "up_ecl": [
+    -0.915105458,
+    0.397377912,
+    -0.068357854
+   ],
+   "right_ecl": [
+    0.162884591,
+    0.519403208,
+    0.838861679
+   ],
+   "view_dir_ecl": [
+    0.368858769,
+    0.756508597,
+    -0.540035139
+   ],
+   "alt_sun_toward_top": {
+    "center_dir_ecl": [
+     0.368867146,
+     0.756504733,
+     -0.540034829
+    ],
+    "up_ecl": [
+     0.915098654,
+     -0.397391866,
+     0.068367815
+    ],
+    "right_ecl": [
+     -0.162884873,
+     -0.519403786,
+     -0.838861267
+    ]
+   },
+   "v1_au": [
+    -15.741593742,
+    -30.057501221,
+    21.857221222
+   ],
+   "planet_au": [
+    -0.812522882,
+    0.561183769,
+    1.3135e-05
+   ],
+   "v1_planet_distance_au": 40.4737,
+   "elongation_from_sun_deg": 1.391,
+   "shift_if_3h_earlier_native_px": 3.7,
+   "roll_method": "derived-from-sun",
+   "roll_note": "Earth frame-up drawn on the mosaic sits +3.2 deg (mod 90) from the edges of its wide-angle frame: an independent check of the Sun-derived roll axis",
+   "validation": {
+    "planet_reprojects_to_px": [
+     89.928,
+     101.745
+    ],
+    "error_px": 0.0,
+    "sun_px": [
+     -656.3,
+     4633.6
+    ]
+   },
+   "jpeg_bytes": 11423
+  },
+  {
+   "planet": "Jupiter",
+   "utc": "1990-02-14T04:48:00Z",
+   "utc_note": "per-frame time not published; evaluated at the Earth-frame time",
+   "image": "pbd/family/jupiter.jpg",
+   "width_px": 180,
+   "height_px": 200,
+   "fov_deg_x": 0.05451,
+   "fov_deg_y": 0.06057,
+   "tan_per_px": 5.285854285714286e-06,
+   "planet_px": [
+    90.66,
+    101.58
+   ],
+   "planet_shape": "elongation 1.08",
+   "center_dir_ecl": [
+    0.337508227,
+    0.799334821,
+    -0.497143884
+   ],
+   "up_ecl": [
+    -0.940460903,
+    0.263744249,
+    -0.214411429
+   ],
+   "right_ecl": [
+    -0.040267681,
+    0.539910007,
+    0.840759001
+   ],
+   "view_dir_ecl": [
+    0.337515935,
+    0.799334494,
+    -0.497139175
+   ],
+   "alt_sun_toward_top": {
+    "center_dir_ecl": [
+     0.337523643,
+     0.799334168,
+     -0.497134467
+    ],
+    "up_ecl": [
+     0.94045527,
+     -0.263757589,
+     0.214419725
+    ],
+    "right_ecl": [
+     0.040270024,
+     -0.539904456,
+     -0.840762454
+    ]
+   },
+   "v1_au": [
+    -15.741593742,
+    -30.057501221,
+    21.857221222
+   ],
+   "planet_au": [
+    -0.901785682,
+    5.087418602,
+    -0.000857685
+   ],
+   "v1_planet_distance_au": 43.9677,
+   "elongation_from_sun_deg": 5.033,
+   "shift_if_3h_earlier_native_px": 0.7,
+   "roll_method": "mosaic-twist (relative to the Earth frame, from PIA00451 frame tilts; mod 90)",
+   "roll_note": "+9.6 deg from the Earth frame's sky position angle; +-5 deg; the mod-90 choice is the smallest turn",
+   "validation": {
+    "planet_reprojects_to_px": [
+     90.657,
+     101.579
+    ],
+    "error_px": 0.0,
+    "sun_px": [
+     -13001.5,
+     10407.0
+    ]
+   },
+   "jpeg_bytes": 6337
+  },
+  {
+   "planet": "Saturn",
+   "utc": "1990-02-14T04:48:00Z",
+   "utc_note": "per-frame time not published; evaluated at the Earth-frame time",
+   "image": "pbd/family/saturn.jpg",
+   "width_px": 180,
+   "height_px": 200,
+   "fov_deg_x": 0.05451,
+   "fov_deg_y": 0.06057,
+   "tan_per_px": 5.285854285714286e-06,
+   "planet_px": [
+    91.75,
+    101.17
+   ],
+   "planet_shape": "elongation 1.28",
+   "center_dir_ecl": [
+    0.531260637,
+    0.580262205,
+    -0.617298882
+   ],
+   "up_ecl": [
+    -0.759398548,
+    0.649181801,
+    -0.043322439
+   ],
+   "right_ecl": [
+    0.375600826,
+    0.491791381,
+    0.785535013
+   ],
+   "view_dir_ecl": [
+    0.531268817,
+    0.580262719,
+    -0.617291358
+   ],
+   "alt_sun_toward_top": {
+    "center_dir_ecl": [
+     0.531276997,
+     0.580263234,
+     -0.617283834
+    ],
+    "up_ecl": [
+     0.759391957,
+     -0.649189001,
+     0.043330098
+    ],
+    "right_ecl": [
+     -0.375591013,
+     -0.491780663,
+     -0.785546415
+    ]
+   },
+   "v1_au": [
+    -15.741593742,
+    -30.057501221,
+    21.857221222
+   ],
+   "planet_au": [
+    3.030000951,
+    -9.554779745,
+    0.046147785
+   ],
+   "v1_planet_distance_au": 35.3335,
+   "elongation_from_sun_deg": 13.186,
+   "shift_if_3h_earlier_native_px": 1.8,
+   "roll_method": "mosaic-twist (relative to the Earth frame, from PIA00451 frame tilts; mod 90)",
+   "roll_note": "-1.5 deg from the Earth frame's sky position angle; +-5 deg; the mod-90 choice is the smallest turn",
+   "validation": {
+    "planet_reprojects_to_px": [
+     91.747,
+     101.174
+    ],
+    "error_px": 0.0,
+    "sun_px": [
+     17060.1,
+     -40848.0
+    ]
+   },
+   "jpeg_bytes": 7914
+  },
+  {
+   "planet": "Uranus",
+   "utc": "1990-02-14T04:48:00Z",
+   "utc_note": "per-frame time not published; evaluated at the Earth-frame time",
+   "image": "pbd/family/uranus.jpg",
+   "width_px": 180,
+   "height_px": 200,
+   "fov_deg_x": 0.05451,
+   "fov_deg_y": 0.06057,
+   "tan_per_px": 5.285854285714286e-06,
+   "planet_px": [
+    90.82,
+    101.9
+   ],
+   "planet_shape": "elongation 2.01 (15 s exposure smear)",
+   "center_dir_ecl": [
+    0.588978057,
+    0.356241406,
+    -0.725394313
+   ],
+   "up_ecl": [
+    -0.463861629,
+    0.884038189,
+    0.057522764
+   ],
+   "right_ecl": [
+    0.661768265,
+    0.302602942,
+    0.685925814
+   ],
+   "view_dir_ecl": [
+    0.588985594,
+    0.356233838,
+    -0.72539191
+   ],
+   "alt_sun_toward_top": {
+    "center_dir_ecl": [
+     0.588993131,
+     0.35622627,
+     -0.725389506
+    ],
+    "up_ecl": [
+     0.463849793,
+     -0.884045348,
+     -0.057508187
+    ],
+    "right_ecl": [
+     -0.661763146,
+     -0.302599845,
+     -0.68593212
+    ]
+   },
+   "v1_au": [
+    -15.741593742,
+    -30.057501221,
+    21.857221222
+   ],
+   "planet_au": [
+    2.085523302,
+    -19.275196209,
+    -0.098572955
+   ],
+   "v1_planet_distance_au": 30.2675,
+   "elongation_from_sun_deg": 27.396,
+   "shift_if_3h_earlier_native_px": 2.9,
+   "roll_method": "mosaic-twist (relative to the Earth frame, from PIA00451 frame tilts; mod 90)",
+   "roll_note": "-9.5 deg from the Earth frame's sky position angle; +-5 deg; the mod-90 choice is the smallest turn",
+   "validation": {
+    "planet_reprojects_to_px": [
+     90.822,
+     101.901
+    ],
+    "error_px": 0.0,
+    "sun_px": [
+     23954.8,
+     -94996.9
+    ]
+   },
+   "jpeg_bytes": 9551
+  },
+  {
+   "planet": "Neptune",
+   "utc": "1990-02-14T04:48:00Z",
+   "utc_note": "per-frame time not published; evaluated at the Earth-frame time",
+   "image": "pbd/family/neptune.jpg",
+   "width_px": 180,
+   "height_px": 200,
+   "fov_deg_x": 0.05451,
+   "fov_deg_y": 0.06057,
+   "tan_per_px": 5.285854285714286e-06,
+   "planet_px": [
+    91.42,
+    100.77
+   ],
+   "planet_shape": "elongation 2.05 (15 s exposure smear)",
+   "center_dir_ecl": [
+    0.720900925,
+    0.018297968,
+    -0.692796536
+   ],
+   "up_ecl": [
+    -0.301687384,
+    0.908251665,
+    -0.289937297
+   ],
+   "right_ecl": [
+    0.623928344,
+    0.41802404,
+    0.660279731
+   ],
+   "view_dir_ecl": [
+    0.72090685,
+    0.018297399,
+    -0.692790386
+   ],
+   "alt_sun_toward_top": {
+    "center_dir_ecl": [
+     0.720912776,
+     0.018296831,
+     -0.692784235
+    ],
+    "up_ecl": [
+     0.301681491,
+     -0.908251814,
+     0.28994296
+    ],
+    "right_ecl": [
+     -0.623917501,
+     -0.418023765,
+     -0.660290152
+    ]
+   },
+   "v1_au": [
+    -15.741593742,
+    -30.057501221,
+    21.857221222
+   ],
+   "planet_au": [
+    6.527223175,
+    -29.492294451,
+    0.45692207
+   ],
+   "v1_planet_distance_au": 30.89,
+   "elongation_from_sun_deg": 47.935,
+   "shift_if_3h_earlier_native_px": 3.9,
+   "roll_method": "mosaic-twist (relative to the Earth frame, from PIA00451 frame tilts; mod 90)",
+   "roll_note": "+19.0 deg from the Earth frame's sky position angle; +-5 deg; the mod-90 choice is the smallest turn",
+   "validation": {
+    "planet_reprojects_to_px": [
+     91.423,
+     100.773
+    ],
+    "error_px": 0.0,
+    "sun_px": [
+     55741.8,
+     -202007.9
+    ]
+   },
+   "jpeg_bytes": 15826
+  }
+ ],
+ "frame_scale_note": "PIA00453 panels are blown up x1.75 relative to native NAC pixels (measured on the Earth panel, +-15%; assumed for all six). NAC: 0.424 deg over 800 px (NAIF vg1_issna_v02.ti).",
+ "roll_note": "No scan-platform pointing survives for 1990 (PDS VGISS ends 1989-09-29; NAIF CK is bus-only). Earth: Sun-derived as in pbd.json. Venus: same twist as Earth (PIA00450 shows both insets with identical orientation). Jupiter-Neptune: twist relative to Earth taken from the tilts of their wide-angle frames in the PIA00451 mosaic (mod 90, smallest turn, +-5 deg). Every frame inherits the Earth frame's 180-deg sign question: alt_sun_toward_top flips them all. The outer planets are point sources, so their roll barely shows.",
+ "not_imaged": {
+  "Mercury": "too close to the Sun (0.39 deg from it as seen from Voyager 1)",
+  "Mars": "not detectable because of scattered sunlight in the optics (1.26 deg from the Sun)",
+  "Pluto": "too small and too far from the Sun (too dim)"
+ },
+ "mosaic": {
+  "projection": "gnomonic (flat plane): the image is a rectangle on the plane tangent to plane_normal_dir at unit distance; place corners at v1 + D*corner",
+  "plane_normal_dir": [
+   0.929554932,
+   0.357753441,
+   0.089107259
+  ],
+  "center_dir_ecl": [
+   0.565969468,
+   0.526247126,
+   -0.634619984
+  ],
+  "up_ecl": [
+   -0.039312806,
+   -0.144132267,
+   0.988777221
+  ],
+  "right_ecl": [
+   0.366581685,
+   -0.922625799,
+   -0.119914568
+  ],
+  "corners_on_unit_plane": [
+   [
+    0.4748592,
+    1.6959709,
+    -0.5403277
+   ],
+   [
+    1.221858,
+    -0.1841023,
+    -0.7846827
+   ],
+   [
+    1.2458908,
+    -0.095991,
+    -1.3891445
+   ],
+   [
+    0.498892,
+    1.7840822,
+    -1.1447895
+   ]
+  ],
+  "px_per_deg_at_tangent_point": 34.26,
+  "angular_width_deg": 67.24,
+  "angular_height_deg": 16.086,
+  "tangent_point_from_center_deg": 48.866,
+  "mirrored": false,
+  "fit_points": {
+   "Sun": [
+    961.3,
+    663.3
+   ],
+   "Venus": [
+    911.2,
+    701.8
+   ],
+   "Earth": [
+    879.4,
+    695.9
+   ],
+   "Jupiter": [
+    648.5,
+    609.4
+   ],
+   "Saturn": [
+    1784.1,
+    655.8
+   ],
+   "Uranus": [
+    2543.2,
+    999.0
+   ],
+   "Neptune": [
+    3647.6,
+    694.7
+   ]
+  },
+  "fit_residual_px": {
+   "Sun": [
+    21.6,
+    -3.9
+   ],
+   "Venus": [
+    -7.0,
+    7.7
+   ],
+   "Earth": [
+    -5.7,
+    21.7
+   ],
+   "Jupiter": [
+    -4.3,
+    16.7
+   ],
+   "Saturn": [
+    9.0,
+    -50.2
+   ],
+   "Uranus": [
+    -23.5,
+    -17.7
+   ],
+   "Neptune": [
+    9.9,
+    25.6
+   ]
+  },
+  "fit_rms_px": 28.31,
+  "fit_residual_deg": {
+   "Sun": 0.3,
+   "Venus": 0.099,
+   "Earth": 0.241,
+   "Jupiter": 0.19,
+   "Saturn": 0.627,
+   "Uranus": 0.464,
+   "Neptune": 0.306
+  },
+  "fit_rms_deg": 0.358,
+  "alternative_fit_rms_deg": {
+   "free_tangent_point": 0.358,
+   "tangent_at_mean_direction": 1.704
+  },
+  "image": "pbd/family/mosaic-pia00451.jpg",
+  "width_px": 3000,
+  "height_px": 900,
+  "fit_points_note": "label-glyph centroids (J, E, V, S, U, N and the Sun) in the 4000x1200 NASA original; the saved JPEG is x0.75",
+  "note": "Hand-assembled MIPL mosaic of wide-angle frames spanning ~55 deg; it is not a rigorous projection. Flat-plane fit with free tangent point: see fit_rms_deg. Good enough to hang as a backdrop card behind the planet frames at ~1-2 deg accuracy; the inset thumbnails (JUPITER, EARTH...) around its edge are NOT at their sky positions.",
+  "credit": "NASA/JPL-Caltech",
+  "source": "PIA00451",
+  "jpeg_bytes": 137803,
+  "conformal_fit_rms_px_4000": 25.0
+ },
+ "sun_earth_venus": {
+  "projection": "gnomonic (flat plane): the image is a rectangle on the plane tangent to plane_normal_dir at unit distance; place corners at v1 + D*corner",
+  "plane_normal_dir": [
+   0.377713663,
+   0.751274516,
+   -0.54121991
+  ],
+  "center_dir_ecl": [
+   0.379455283,
+   0.752383131,
+   -0.538454559
+  ],
+  "up_ecl": [
+   0.154246952,
+   0.525298153,
+   0.836821205
+  ],
+  "right_ecl": [
+   0.912984264,
+   -0.399560324,
+   0.082530485
+  ],
+  "corners_on_unit_plane": [
+   [
+    0.3668235,
+    0.7652061,
+    -0.5294814
+   ],
+   [
+    0.395885,
+    0.7524876,
+    -0.5268544
+   ],
+   [
+    0.3920916,
+    0.7395691,
+    -0.5474341
+   ],
+   [
+    0.3630301,
+    0.7522876,
+    -0.5500611
+   ]
+  ],
+  "px_per_deg_at_tangent_point": 1880.688,
+  "angular_width_deg": 1.824,
+  "angular_height_deg": 1.409,
+  "tangent_point_from_center_deg": 0.198,
+  "mirrored": false,
+  "fit_points": {
+   "Sun": [
+    3057.5,
+    1863.2
+   ],
+   "Earth": [
+    480.5,
+    1413.5
+   ],
+   "Venus": [
+    1162.5,
+    1721.5
+   ]
+  },
+  "fit_residual_px": {
+   "Sun": [
+    -0.4,
+    -1.3
+   ],
+   "Earth": [
+    0.3,
+    -3.4
+   ],
+   "Venus": [
+    0.1,
+    4.7
+   ]
+  },
+  "fit_rms_px": 3.42,
+  "fit_residual_deg": {
+   "Sun": 0.001,
+   "Earth": 0.002,
+   "Venus": 0.002
+  },
+  "fit_rms_deg": 0.002,
+  "image": "pbd/family/sun-earth-venus-pia00450.jpg",
+  "width_px": 1715,
+  "height_px": 1325,
+  "fit_points_note": "pixel coords are in the 3430x2650 NASA original; the saved JPEG is x0.5",
+  "note": "WA Sun frame (methane filter, 0.005 s) with the Earth and Venus NAC colour frames inset at the WA scale. Placement fits the ephemeris to <0.1% in scale and ~0.2 deg in angle with only 3 points (Sun, Earth, Venus), so it is a precise panel. Its insets are the PBD rotated 90 deg clockwise, which puts the Sun toward the PBD's TOP (the alt_sun_toward_top roll), opposite to NASA's 2020 caption.",
+  "credit": "NASA/JPL",
+  "source": "PIA00450",
+  "jpeg_bytes": 313573
+ },
+ "v1_au": [
+  -15.741593742,
+  -30.057501221,
+  21.857221222
+ ],
+ "sun_dir_ecl": [
+  0.390022434,
+  0.744721276,
+  -0.541546603
+ ],
+ "credit": "NASA/JPL-Caltech. Images PIA00450, PIA00451, PIA00453 (Voyager 1 Solar System Portrait, 1990).",
+ "credit_per_image": {
+  "PIA00451": "NASA/JPL-Caltech",
+  "PIA00453": "NASA/JPL",
+  "PIA00450": "NASA/JPL"
+ },
+ "license": "NASA/JPL mission imagery, not copyrighted (public domain in the US); JPL Image Use Policy: usable for any purpose without prior permission, with credit",
+ "sources": [
+  "https://science.nasa.gov/photojournal/solar-system-portrait-views-of-6-planets (PIA00453)",
+  "https://science.nasa.gov/photojournal/solar-system-portrait-60-frame-mosaic (PIA00451)",
+  "https://science.nasa.gov/photojournal/solar-system-portrait-view-of-the-sun-earth-and-venus (PIA00450)",
+  "https://science.nasa.gov/photojournal/pale-blue-dot-revisited (PIA23645)",
+  "https://naif.jpl.nasa.gov/pub/naif/VOYAGER/kernels/ik/vg1_issna_v02.ti",
+  "https://ssd.jpl.nasa.gov/api/horizons.api",
+  "https://www.jpl.nasa.gov/jpl-image-use-policy"
+ ]
+}

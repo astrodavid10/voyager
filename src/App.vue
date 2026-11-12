@@ -7,6 +7,7 @@
         :scene-ms="sceneMs"
         :shape="shape"
         :pbd="pbd"
+        :family="family"
         :moment="moment"
         @flyby-year="flybyYears = $event"
         @show-credits="showCredits = true"
@@ -48,6 +49,25 @@
       </div>
       <h2>{{ chapter.title }}</h2>
       <p v-if="chapter.id === 'today'" class="vy-body">{{ todayBody }}</p>
+      <template v-else-if="chapter.id === 'journey' && pbd && family">
+        <p class="vy-body">
+          <strong class="vy-year">Feb. 14, 1990</strong> Voyager 1 took 60 frames to make the first portrait of
+          our solar system from outside it: six planets, each a dot. Mercury was too close to the Sun, Mars was lost
+          in scattered sunlight, and Pluto was too small and dim. Each frame is placed where the camera pointed;
+          you are standing where Voyager was.
+        </p>
+        <div class="vy-planets" role="group" aria-label="Fly to a planet's frame">
+          <button
+            v-for="pl in familyPlanets" :key="pl" type="button" :class="{ on: family === pl }"
+            :aria-pressed="family === pl" @click="family = pl"
+          >{{ pl }}</button>
+        </div>
+        <p class="vy-note">Images: NASA/JPL-Caltech (PIA00450, PIA00451, PIA00453). Camera roll estimated.</p>
+        <button v-if="family !== 'all'" type="button" class="btn ghost vy-more" @click="family = 'all'">
+          The whole portrait
+        </button>
+        <button type="button" class="btn ghost vy-more" @click="family = ''">Back to the Pale Blue Dot</button>
+      </template>
       <template v-else-if="chapter.id === 'journey' && pbd">
         <p class="vy-body">
           <strong class="vy-year">Feb. 14, 1990</strong> Voyager 1 turned its camera back from 3.7 billion miles
@@ -58,6 +78,7 @@
           “Look again at that dot. That's here. That's home. That's us.” Carl Sagan.
           Image: NASA/JPL-Caltech, Pale Blue Dot Revisited (PIA23645). Camera roll estimated from the sunlight.
         </p>
+        <button type="button" class="btn ghost vy-more" @click="family = 'all'">See the whole Family Portrait</button>
         <button type="button" class="btn ghost vy-more" @click="endPbd">Continue the journey</button>
       </template>
       <template v-else-if="chapter.id === 'journey'">
@@ -196,6 +217,8 @@ export default defineComponent({
       playing: false,
       audio: null as HTMLAudioElement | null,
       pbd: false,
+      family: "",
+      familyPlanets: ["Venus", "Earth", "Jupiter", "Saturn", "Uranus", "Neptune"],
       moment: "",
       cardHidden: false,
       journeyWaiting: false,
@@ -275,6 +298,7 @@ export default defineComponent({
       cancelAnimationFrame(this.raf);
       this.stopListen();
       this.pbd = false;
+      this.family = "";
       this.moment = "";
       if (id === "journey") {
         // Hold at launch until the camera has zoomed in on the inner solar
@@ -340,6 +364,7 @@ export default defineComponent({
       this.pbd = true;
     },
     endPbd(): void {
+      this.family = "";
       this.pbd = false;
       this.runJourney(PBD_MS, 14);
     },

@@ -65,6 +65,7 @@ import { Projected, ProjectTarget, projectTargets } from "../three/project";
 import type { GalaxyLabel, GalaxyLayer } from "../three/galaxy";
 import { createOortPoints } from "../three/oortPoints";
 import { PaleBlueDot, createPaleBlueDot } from "../three/paleBlueDot";
+import { FamilyPortrait, createFamilyPortrait } from "../three/familyPortrait";
 import { Flyby, PulsarMap, createFlyby, createPulsarMap } from "../three/farLayers";
 import { createShellMaterial } from "../three/shellMaterial";
 import { ThreeStage, createThreeStage } from "../three/stage";
@@ -164,6 +165,8 @@ interface Runtime {
   galaxyLabels: Record<string, GalaxyLabel>;
   pbd: PaleBlueDot | null;
   pbdAlpha: number;
+  family: FamilyPortrait | null;
+  familyAlpha: number;
   pulsarMap: PulsarMap | null;
   flyby: Flyby | null;
   obstacles: Rect[];
@@ -190,6 +193,8 @@ export default defineComponent({
     shape: { type: String as PropType<"comet" | "croissant" | "bubble">, default: "comet" },
     /** Pale Blue Dot moment (journey chapter): fly to Voyager's 1990 sightline. */
     pbd: { type: Boolean, default: false },
+    /** Family Portrait step inside the Pale Blue Dot moment: "" | "all" | a planet name. */
+    family: { type: String, default: "" },
     /** Chapter-5 moments: "" | "pulsars" (Golden Record map) | "flyby" (Gliese 445). */
     moment: { type: String, default: "" },
   },
@@ -210,7 +215,7 @@ export default defineComponent({
       frame: 0,
       rt: markRaw({
         stage: null, gestures: null, eph: null, trails: {}, targets: [], projected: [],
-        world: null, helio: null, offset: [0, 0, 0], shellMats: {}, tidal: null, oort: null, galaxy: null, galaxyLabels: {}, pbd: null, pbdAlpha: 0, pulsarMap: null, flyby: null, obstacles: [], momentAlpha: 0, momentT0: 0, flybyYears: 0,
+        world: null, helio: null, offset: [0, 0, 0], shellMats: {}, tidal: null, oort: null, galaxy: null, galaxyLabels: {}, pbd: null, pbdAlpha: 0, family: null, familyAlpha: 0, pulsarMap: null, flyby: null, obstacles: [], momentAlpha: 0, momentT0: 0, flybyYears: 0,
         lastYearEmit: 0, lastFadeMs: 0, lastTimeSync: 0,
         timer: 0, destroyed: false,
       } as Runtime),
@@ -221,6 +226,7 @@ export default defineComponent({
     chapter() { void this.frameChapter(false); },
     shape() { /* weights are eased in tick() */ },
     pbd(on: boolean) { void (on ? this.showPbd() : this.frameChapter(false)); },
+    family(f: string) { void (f ? this.showFamily(f) : this.pbd ? this.showPbd() : null); },
     moment(m: string) {
       if (m === "pulsars") { void this.showPulsars(); } else if (m === "flyby") { void this.showFlyby(); } else {
         void this.frameChapter(false);
@@ -442,6 +448,52 @@ export default defineComponent({
       await flyTo({ target, distanceAu: fitDistance(7.5e5), lat, lng, rotation: 0 }, 3000);
     },
 
+    /**
+     * The Family Portrait: the camera stands AT Voyager 1's 1990 position (target
+     * D au ahead, camera distance D), the only viewpoint where every panel lines
+     * up. "all" faces the 60-frame mosaic; a planet name glides down that
+     * planet's sightline to its narrow-angle frame.
+     */
+    async showFamily(which: string): Promise<void> {
+      const rt = this.rt;
+      if (!rt.family) {
+        try {
+          rt.family = markRaw(await createFamilyPortrait("./data/"));
+          rt.world?.add(rt.family.group);
+          for (const f of rt.family.data.frames) {
+            if (f.planet === "Earth") { continue; } // the Earth pin already exists
+            this.pins.push({ id: `fam-${f.planet}`, kind: "planet", label: f.planet, sub: "", color: "#cfe3ff",
+              x: 0, y: 0, visible: false });
+            rt.targets.push({ id: `fam-${f.planet}`, position: new Vector3() });
+          }
+        } catch (err) {
+          console.error("[VoyagerView3D] Family Portrait failed:", err);
+          return;
+        }
+      }
+      const d = rt.family.data;
+      const v1 = d.v1_au;
+      if (which === "all") {
+        const cs = d.mosaic.corners_on_unit_plane;
+        const c: Vec3 = [0, 1, 2].map((k) => (cs[0][k] + cs[1][k] + cs[2][k] + cs[3][k]) / 4) as Vec3;
+        const n = Math.hypot(c[0], c[1], c[2]);
+        const dir: Vec3 = [c[0] / n, c[1] / n, c[2] / n];
+        const up: Vec3 = [0, 1, 2].map((k) => cs[0][k] - cs[3][k]) as Vec3; // left edge, bottom -> top
+        const dist = 40;
+        const { lat, lng } = viewFromEcliptic([-dir[0], -dir[1], -dir[2]]);
+        await flyTo({ target: [v1[0] + dir[0] * dist, v1[1] + dir[1] * dist, v1[2] + dir[2] * dist], distanceAu: dist,
+          lat, lng, rotation: rollForUp(lat, lng, up) }, 3200);
+        return;
+      }
+      const f = d.frames.find((x) => x.planet === which);
+      if (!f) { return; }
+      const p = f.planet_au;
+      const back: Vec3 = [v1[0] - p[0], v1[1] - p[1], v1[2] - p[2]];
+      const { lat, lng } = viewFromEcliptic(back);
+      await flyTo({ target: p, distanceAu: fitDistance(rt.family.frameHalfHeight[which] * 1.8), lat, lng,
+        rotation: rollForUp(lat, lng, f.up_ecl) }, 3600);
+    },
+
     async frameChapter(instant: boolean): Promise<void> {
       if (!this.ready) { return; }
       const ch = this.chapter;
@@ -647,8 +699,14 @@ export default defineComponent({
         const now = performance.now();
         const dt = Math.min(0.1, (now - (rt.lastFadeMs || now)) / 1000);
         rt.lastFadeMs = now;
-        rt.pbdAlpha = this.pbd ? Math.min(1, rt.pbdAlpha + dt / 2.5) : Math.max(0, rt.pbdAlpha - dt / 0.6);
+        const pbdOn = this.pbd && !this.family;
+        rt.pbdAlpha = pbdOn ? Math.min(1, rt.pbdAlpha + dt / 2.5) : Math.max(0, rt.pbdAlpha - dt / 0.6);
         rt.pbd.setOpacity(rt.pbdAlpha);
+      }
+      if (rt.family) {
+        const famOn = this.pbd && !!this.family;
+        rt.familyAlpha = famOn ? Math.min(1, rt.familyAlpha + 0.04) : Math.max(0, rt.familyAlpha - 0.1);
+        rt.family.setOpacity(0.9 * rt.familyAlpha, rt.familyAlpha);
       }
       // Chapter-5 moments: fade their layers; run the flyby clock.
       const mWant = this.moment ? 1 : 0;
@@ -690,6 +748,9 @@ export default defineComponent({
         if (p.id === "acen") { pos = eclXYZ(239.5, -42.6, 277900); }
         if (p.id === "gc") { pos = eclXYZ(266.84, -5.54, 283157); }
         if (p.kind === "galaxy") { pos = rt.galaxyLabels[p.id].position; }
+        if (p.id.startsWith("fam-") && rt.family) {
+          pos = rt.family.data.frames.find((f) => `fam-${f.planet}` === p.id)!.planet_au;
+        }
         if (p.kind === "pulsar" && rt.pulsarMap) {
           pos = rt.pulsarMap.data.pulsars.find((q) => `psr-${q.bname}` === p.id)!.xyz_au;
         }
@@ -709,11 +770,14 @@ export default defineComponent({
           vis = vis && this.chapter === "journey" && (this.pbd || distanceAu(this.craftPos("voyager1")) < 25);
           p.label = "Earth";
           p.sub = this.pbd ? "Feb. 14, 1990" : "";
-          p.ring = this.pbd;
+          p.ring = this.pbd && (!this.family || this.family === "Earth");
         }
         if (p.kind === "star") { vis = vis && viewR > 60000; }
         if (far && (p.id === "sun" || p.id === "voyager2")) { vis = false; }
-        if (p.kind === "pulsar") {
+        if (p.id.startsWith("fam-")) {
+          vis = vis && this.pbd && !!this.family;
+          p.ring = this.family === p.label;
+        } else if (p.kind === "pulsar") {
           vis = vis && this.moment === "pulsars";
         } else if (p.kind === "flyby") {
           vis = vis && this.moment === "flyby" && !!rt.flyby;

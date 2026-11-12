@@ -112,3 +112,12 @@ body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fo
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer;
   &:focus-visible { outline: 3px solid var(--accent); }
 }
+
+// Family Portrait planet picker: a wrapping row of 48 px buttons.
+.vy-planets {
+  display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 10px;
+  button { flex: 1 1 30%; min-height: 44px; border-radius: 10px; border: 1px solid var(--panel-edge);
+    color: var(--ink); font-size: 15px; cursor: pointer;
+    &.on { background: rgba(255, 209, 102, 0.18); color: var(--accent); font-weight: 700; }
+    &:focus-visible { outline: 3px solid var(--accent); } }
+}
