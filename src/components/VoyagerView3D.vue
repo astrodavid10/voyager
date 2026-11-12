@@ -11,7 +11,15 @@
         :style="{ transform: `translate(${p.x}px, ${p.y}px)`, '--pin': p.color }"
       >
         <span class="pin-dot" />
-        <span v-show="!p.labelHidden" class="pin-label" :style="{ top: (p.dy ?? -10) + 'px' }">{{ p.label }}<small v-if="p.sub">{{ p.sub }}</small></span>
+        <span v-show="!p.labelHidden && !p.leader" class="pin-label" :style="{ top: (p.dy ?? -10) + 'px' }">{{ p.label }}<small v-if="p.sub">{{ p.sub }}</small></span>
+      </div>
+    </div>
+    <div class="v3d-pins" aria-hidden="true">
+      <div v-for="p in leaderPins" :key="'ld-' + p.id" class="leader">
+        <div class="leader-line" :style="leaderLine(p)" />
+        <div class="leader-label" :style="{ transform: `translate(${p.lx}px, ${p.ly}px)`, '--pin': p.color }">
+          {{ p.label }}
+        </div>
       </div>
     </div>
     <nav v-if="ready" class="ladder" aria-label="Distance from the Sun">
@@ -49,7 +57,7 @@ import { EngineSetting, RenderContext, WWTControl } from "@wwtelescope/engine";
 import { WWTAwareComponent, WWTComponent, wwtPinia } from "@wwtelescope/engine-pinia";
 import { PropType, defineComponent, markRaw } from "vue";
 import {
-  BufferGeometry, Float32BufferAttribute, Group, Line, LineBasicMaterial, Mesh, MeshBasicMaterial,
+  ArrowHelper, BufferGeometry, DoubleSide, Float32BufferAttribute, Group, Line, LineBasicMaterial, Mesh, MeshBasicMaterial,
   Points, ShaderMaterial, Vector3,
 } from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
@@ -88,6 +96,8 @@ function installEngine(): void {
 installEngine();
 
 const CRAFT = ["voyager1", "voyager2"] as const;
+/** Length of the "toward the Galactic center" arrow, au (past the 283,000 au tidal edge). */
+const GC_ARROW_AU = 380000;
 
 function eclXYZ(lonDeg: number, latDeg: number, rAu: number): Vec3 {
   const lo = (lonDeg * Math.PI) / 180, la = (latDeg * Math.PI) / 180;
@@ -106,6 +116,10 @@ interface Pin {
   labelHidden?: boolean;
   /** Draw as an open ring (Pale Blue Dot Earth: the real dot shows through). */
   ring?: boolean;
+  /** Label parked at (lx, ly) with a leader line to the dot (fast-moving Earth). */
+  leader?: boolean;
+  lx?: number;
+  ly?: number;
 }
 
 /** Lower = placed first, so it wins a collision. */
@@ -141,6 +155,11 @@ function declutter(pins: Pin[], vw: number, vh: number, obstacles: Rect[]): void
   for (let i = 0; i < order.length; i++) {
     const p = order[i];
     const own = dots[i];
+    if (p.leader) {
+      // Parked label: reserve its box so other labels stay clear of it.
+      placed.push({ x0: (p.lx ?? 0) - 60, y0: (p.ly ?? 0) - 11, x1: (p.lx ?? 0) + 2, y1: (p.ly ?? 0) + 11 });
+      continue;
+    }
     const small = p.kind === "pulsar" || p.kind === "crossing";
     const cw = small ? 6.6 : 7.6;
     // Labels wrap at 170 px, so long names take two lines: estimate the height.
@@ -184,6 +203,7 @@ interface Runtime {
   offset: Vec3;
   shellMats: Record<string, ShaderMaterial>;
   tidal: Group | null;
+  gcArrow: ArrowHelper | null;
   oort: Points | null;
   galaxy: GalaxyLayer | null;
   galaxyLabels: Record<string, GalaxyLabel>;
@@ -242,11 +262,15 @@ export default defineComponent({
       frame: 0,
       rt: markRaw({
         stage: null, gestures: null, eph: null, trails: {}, targets: [], projected: [],
-        world: null, helio: null, offset: [0, 0, 0], shellMats: {}, tidal: null, oort: null, galaxy: null, galaxyLabels: {}, pbd: null, pbdAlpha: 0, family: null, familyAlpha: 0, pulsarMap: null, flyby: null, obstacles: [], obstaclesAt: 0, momentAlpha: 0, momentT0: 0, flybyYears: 0,
+        world: null, helio: null, offset: [0, 0, 0], shellMats: {}, tidal: null, gcArrow: null, oort: null, galaxy: null, galaxyLabels: {}, pbd: null, pbdAlpha: 0, family: null, familyAlpha: 0, pulsarMap: null, flyby: null, obstacles: [], obstaclesAt: 0, momentAlpha: 0, momentT0: 0, flybyYears: 0,
         lastYearEmit: 0, lastFadeMs: 0, lastTimeSync: 0,
         timer: 0, destroyed: false,
       } as Runtime),
     };
+  },
+
+  computed: {
+    leaderPins(): Pin[] { return this.pins.filter((p) => p.leader && p.visible); },
   },
 
   watch: {
@@ -312,6 +336,16 @@ export default defineComponent({
 
   methods: {
     retry(): void { window.location.reload(); },
+
+    /** CSS for a 1 px line from the dot to the parked label's right edge. */
+    leaderLine(p: Pin): Record<string, string> {
+      const dx = (p.lx ?? 0) + 4 - p.x, dy = (p.ly ?? 0) - p.y;
+      return {
+        width: `${Math.hypot(dx, dy)}px`,
+        transform: `translate(${p.x}px, ${p.y}px) rotate(${Math.atan2(dy, dx)}rad)`,
+        "--pin": p.color,
+      };
+    },
 
     /** Screen rects of every [data-obstacle] element (UI chrome), ~4 Hz. */
     refreshObstacles(): void {
@@ -382,7 +416,7 @@ export default defineComponent({
         return { target: [0, 0, 0], distanceAu: fitDistance(110000), lat, lng };
       }
       case "edge": {
-        const { lat, lng } = viewFromEcliptic([0.3, 0.8, 0.5]);
+        const { lat, lng } = viewFromEcliptic([0.8, 0.05, 0.6]); // side-on to the Galactic-center direction
         return { target: [0, 0, 0], distanceAu: fitDistance(330000), lat, lng };
       }
       default: {
@@ -676,6 +710,19 @@ export default defineComponent({
           m.frustumCulled = false;
           m.renderOrder = 1;
         });
+        // Arrow from the Sun toward the Galactic center (l = 0, b = 0; ecliptic
+        // 266.84, -5.54), reaching past the tidal edge; the label sits at its tip.
+        const g = eclXYZ(266.84, -5.54, 1);
+        rt.gcArrow = markRaw(new ArrowHelper(new Vector3(g[0], g[1], g[2]), new Vector3(0, 0, 0), GC_ARROW_AU,
+          0x9fdcff, GC_ARROW_AU * 0.12, GC_ARROW_AU * 0.06));
+        rt.gcArrow.traverse((o) => {
+          const m = (o as Mesh).material as MeshBasicMaterial | undefined;
+          if (m) { m.depthTest = false; m.transparent = true; m.opacity = 0.9; m.side = DoubleSide; }
+          o.frustumCulled = false;
+          o.renderOrder = 25;
+        });
+        rt.gcArrow.visible = false;
+        rt.world?.add(rt.gcArrow);
         rt.tidal = markRaw(gltf.scene);
         rt.tidal.visible = false;
         rt.world?.add(rt.tidal);
@@ -760,6 +807,7 @@ export default defineComponent({
       const far = viewR > 2500;
       if (rt.oort) { rt.oort.visible = viewR > 1200; }
       if (rt.tidal) { rt.tidal.visible = viewR > 25000; }
+      if (rt.gcArrow) { rt.gcArrow.visible = viewR > 25000 && viewR < 1e6; }
       rt.galaxy?.update({ viewRAu: viewR, ms });
       // Pins
       const showCrossings = this.chapter === "bubble";
@@ -772,7 +820,7 @@ export default defineComponent({
           pos = positionAt(eph.bodies[c.craft], Date.parse(c.date + "T00:00:00Z"));
         }
         if (p.id === "acen") { pos = eclXYZ(239.5, -42.6, 277900); }
-        if (p.id === "gc") { pos = eclXYZ(266.84, -5.54, 283157); }
+        if (p.id === "gc") { pos = eclXYZ(266.84, -5.54, GC_ARROW_AU); }
         if (p.kind === "galaxy") { pos = rt.galaxyLabels[p.id].position; }
         if (p.id.startsWith("fam-") && rt.family) {
           pos = rt.family.data.frames.find((f) => `fam-${f.planet}` === p.id)!.planet_au;
@@ -835,6 +883,18 @@ export default defineComponent({
         }
       }
       if (performance.now() - rt.obstaclesAt > 250) { rt.obstaclesAt = performance.now(); this.refreshObstacles(); }
+      // Earth races around the Sun during the journey: park its label up and to
+      // the left of the Sun and join it to the dot with a leader line.
+      const sunIdx = this.pins.findIndex((q) => q.id === "sun");
+      const sunQ = sunIdx >= 0 ? rt.projected[sunIdx] : undefined;
+      for (const p of this.pins) {
+        if (p.id !== "earth") { continue; }
+        p.leader = this.chapter === "journey" && !this.pbd && !!sunQ?.visible;
+        if (p.leader && sunQ) {
+          p.lx = Math.min(w - 20, Math.max(80, sunQ.xCss - 70));
+          p.ly = Math.min(h - 20, Math.max(110, sunQ.yCss - 70));
+        }
+      }
       declutter(this.pins, w, h, rt.obstacles);
     },
   },
@@ -868,6 +928,14 @@ export type { EngineSetting };
   }
 }
 .pin { display: block; width: 0; height: 0; }
+.leader-line {
+  position: absolute; left: 0; top: 0; height: 1px; transform-origin: 0 50%;
+  background: var(--pin); opacity: 0.75; box-shadow: 0 0 2px #000;
+}
+.leader-label {
+  position: absolute; left: 0; top: 0; margin: -11px 0 0 -60px; width: 60px; text-align: right;
+  font-size: 14px; line-height: 22px; color: #fff; text-shadow: 0 1px 3px #000, 0 0 6px #000;
+}
 .pin .pin-dot { position: absolute; left: 0; top: 0; }
 .pin .pin-label { position: absolute; left: 11px; top: -10px; margin-top: 0; }
 .pin.flip .pin-label { left: auto; right: 11px; text-align: right; }
