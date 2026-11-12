@@ -40,7 +40,7 @@
 // Patches must run at import time, before <WorldWideTelescope> mounts (sol footgun 10).
 import "../wwt/wwt-hacks";
 
-import { EngineSetting } from "@wwtelescope/engine";
+import { EngineSetting, RenderContext, WWTControl } from "@wwtelescope/engine";
 import { WWTAwareComponent, WWTComponent, wwtPinia } from "@wwtelescope/engine-pinia";
 import { PropType, defineComponent, markRaw } from "vue";
 import {
@@ -161,6 +161,7 @@ export default defineComponent({
     installHiDpiCanvas(2);
     rt.eph = markRaw(await loadEphemeris());
     initVoyagerStage(this as unknown as StageHost, this.shotFor(this.chapter));
+    void this.useIauSky();
     try {
       rt.stage = markRaw(createThreeStage({ target: "wwt", onBeforeRender: this.tick }));
     } catch (err) {
@@ -324,6 +325,42 @@ export default defineComponent({
         rt.world?.add(gltf.scene);
       } catch (err) {
         console.error("[VoyagerView3D] heliosphere.glb failed:", err);
+      }
+    },
+
+    /**
+     * Sky backdrop: the IAU/NOIRLab all-sky panorama by Eckhard Slawik instead
+     * of DSS2. In solar-system mode WWT draws its backdrop from a PRIVATE field,
+     * `_milkyWayBackground`, which it fills once with
+     * getImagesetByName("Digitized Sky Survey (Color)") (engine 7.39, the
+     * renderType 4 branch of WWTControl.render). Loading our WTML and setting
+     * that field swaps it. `?sky=dss` keeps the engine default.
+     */
+    async useIauSky(): Promise<void> {
+      if (new URLSearchParams(location.search).get("sky") === "dss") { return; }
+      try {
+        const host = this as unknown as {
+          loadImageCollection: (p: { url: string; loadChildFolders?: boolean }) => Promise<unknown>;
+        };
+        await host.loadImageCollection({ url: new URL("iau-allsky.wtml", location.href).toString() });
+        const iset = WWTControl.singleton.getImagesetByName("Eckhard All Sky");
+        if (iset) {
+          (WWTControl.singleton as unknown as { _milkyWayBackground: unknown })._milkyWayBackground = iset;
+          // WWT draws this backdrop at (1 - fade)/2, i.e. 50% at best. The
+          // natural-colour panorama is far darker than DSS's boosted colours, so
+          // double it (only for our imageset); the distance fade still applies.
+          const proto = RenderContext.prototype as unknown as {
+            drawImageSet: (this: unknown, is: unknown, opacity: number) => void;
+          };
+          const orig = proto.drawImageSet;
+          proto.drawImageSet = function (is: unknown, opacity: number) {
+            return orig.call(this, is, is === iset ? Math.min(100, opacity * 2) : opacity);
+          };
+        } else {
+          console.warn("[VoyagerView3D] IAU all-sky imageset not found; keeping DSS.");
+        }
+      } catch (err) {
+        console.error("[VoyagerView3D] IAU all-sky failed; keeping DSS:", err);
       }
     },
 
