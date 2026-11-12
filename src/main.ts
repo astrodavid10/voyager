@@ -9,10 +9,10 @@ import "./assets/voyager.less";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { library } from "@fortawesome/fontawesome-svg-core";
 import {
-  faChevronLeft, faChevronRight, faCompass, faHouse, faPause, faPlay, faShareNodes,
+  faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faCircleInfo, faCompass, faHouse, faPause, faPlay, faShareNodes,
   faVolumeHigh, faXmark,
 } from "@fortawesome/free-solid-svg-icons";
-library.add(faChevronLeft, faChevronRight, faCompass, faHouse, faPause, faPlay, faShareNodes,
+library.add(faChevronDown, faChevronLeft, faChevronRight, faChevronUp, faCircleInfo, faCompass, faHouse, faPause, faPlay, faShareNodes,
   faVolumeHigh, faXmark);
 
 // iOS Safari: stop page-level pinch zoom; the 3D canvas handles its own pinch.

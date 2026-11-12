@@ -63,6 +63,7 @@ import { Projected, ProjectTarget, projectTargets } from "../three/project";
 import type { GalaxyLabel, GalaxyLayer } from "../three/galaxy";
 import { createOortPoints } from "../three/oortPoints";
 import { PaleBlueDot, createPaleBlueDot } from "../three/paleBlueDot";
+import { Flyby, PulsarMap, createFlyby, createPulsarMap } from "../three/farLayers";
 import { createShellMaterial } from "../three/shellMaterial";
 import { ThreeStage, createThreeStage } from "../three/stage";
 import { installSunGestures, type SunGestures } from "../wwt/gestures";
@@ -111,6 +112,12 @@ interface Runtime {
   galaxyLabels: Record<string, GalaxyLabel>;
   pbd: PaleBlueDot | null;
   pbdAlpha: number;
+  pulsarMap: PulsarMap | null;
+  flyby: Flyby | null;
+  momentAlpha: number;
+  momentT0: number;
+  flybyYears: number;
+  lastYearEmit: number;
   lastFadeMs: number;
   lastTimeSync: number;
   targets: ProjectTarget[];
@@ -130,9 +137,11 @@ export default defineComponent({
     shape: { type: String as PropType<"comet" | "croissant" | "bubble">, default: "comet" },
     /** Pale Blue Dot moment (journey chapter): fly to Voyager's 1990 sightline. */
     pbd: { type: Boolean, default: false },
+    /** Chapter-5 moments: "" | "pulsars" (Golden Record map) | "flyby" (Gliese 445). */
+    moment: { type: String, default: "" },
   },
 
-  emits: ["ready", "failed"],
+  emits: ["ready", "failed", "flyby-year"],
 
   beforeCreate() { installEngine(); },
 
@@ -148,7 +157,8 @@ export default defineComponent({
       frame: 0,
       rt: markRaw({
         stage: null, gestures: null, eph: null, trails: {}, targets: [], projected: [],
-        world: null, helio: null, offset: [0, 0, 0], shellMats: {}, tidal: null, oort: null, galaxy: null, galaxyLabels: {}, pbd: null, pbdAlpha: 0, lastFadeMs: 0, lastTimeSync: 0,
+        world: null, helio: null, offset: [0, 0, 0], shellMats: {}, tidal: null, oort: null, galaxy: null, galaxyLabels: {}, pbd: null, pbdAlpha: 0, pulsarMap: null, flyby: null, momentAlpha: 0, momentT0: 0, flybyYears: 0,
+        lastYearEmit: 0, lastFadeMs: 0, lastTimeSync: 0,
         timer: 0, destroyed: false,
       } as Runtime),
     };
@@ -158,6 +168,11 @@ export default defineComponent({
     chapter() { void this.frameChapter(false); },
     shape() { /* weights are eased in tick() */ },
     pbd(on: boolean) { void (on ? this.showPbd() : this.frameChapter(false)); },
+    moment(m: string) {
+      if (m === "pulsars") { void this.showPulsars(); } else if (m === "flyby") { void this.showFlyby(); } else {
+        void this.frameChapter(false);
+      }
+    },
   },
 
   async mounted() {
@@ -307,6 +322,59 @@ export default defineComponent({
       await flyTo({ target: e, distanceAu: dist + 8, lat, lng, rotation }, 3200);
       if (!this.pbd) { return; }
       await flyTo({ target: e, distanceAu: fitDistance(rt.pbd.halfHeightAu * 1.7), lat, lng, rotation }, 4200);
+    },
+
+    /** The Golden Record pulsar map, in the real Galaxy. */
+    async showPulsars(): Promise<void> {
+      const rt = this.rt;
+      if (!rt.pulsarMap) {
+        try {
+          rt.pulsarMap = markRaw(await createPulsarMap("./data/"));
+          rt.world?.add(rt.pulsarMap.group);
+          for (const p of rt.pulsarMap.data.pulsars) {
+            this.pins.push({ id: `psr-${p.bname}`, kind: "pulsar", label: p.bname,
+              sub: `${p.dist_kpc.toLocaleString()} kpc`, color: "#f2cf74", x: 0, y: 0, visible: false });
+            rt.targets.push({ id: `psr-${p.bname}`, position: new Vector3() });
+          }
+        } catch (err) {
+          console.error("[VoyagerView3D] pulsar map failed:", err);
+          return;
+        }
+      }
+      rt.momentT0 = performance.now();
+      const gc = eclXYZ(266.84, -5.54, 1.687e9 * 0.42);
+      const { lat, lng } = viewFromEcliptic([-0.7128, 0.4469, 0.466]);
+      await flyTo({ target: gc, distanceAu: fitDistance(1.25e9), lat, lng, rotation: 0 }, 3600);
+    },
+
+    /** Voyager 1 meets Gliese 445: a straight-line fast-forward to closest approach. */
+    async showFlyby(): Promise<void> {
+      const rt = this.rt;
+      if (!rt.flyby) {
+        try {
+          rt.flyby = markRaw(await createFlyby("./data/"));
+          rt.world?.add(rt.flyby.group);
+          for (const id of ["fb-craft", "fb-star", "fb-closest"]) {
+            this.pins.push({ id, kind: "flyby", label: "", sub: "", color: id === "fb-star" ? "#ff8a7a" : "#e69f00",
+              x: 0, y: 0, visible: false });
+            rt.targets.push({ id, position: new Vector3() });
+          }
+        } catch (err) {
+          console.error("[VoyagerView3D] flyby failed:", err);
+          return;
+        }
+      }
+      const fb = rt.flyby;
+      const enc = fb.at(fb.encounter.t_years);
+      const s0 = fb.star.r0_au;
+      // Look down on the plane holding the star's path and Voyager's.
+      const sv = fb.star.v_au_per_yr, cv = fb.craft.v_au_per_yr;
+      const n: Vec3 = [sv[1] * cv[2] - sv[2] * cv[1], sv[2] * cv[0] - sv[0] * cv[2], sv[0] * cv[1] - sv[1] * cv[0]];
+      const { lat, lng } = viewFromEcliptic(n);
+      const target: Vec3 = [(s0[0] + enc.craft[0]) * 0.4, (s0[1] + enc.craft[1]) * 0.4, (s0[2] + enc.craft[2]) * 0.4];
+      rt.flybyYears = 0;
+      rt.momentT0 = performance.now() + 3000; // the clock starts after the flight
+      await flyTo({ target, distanceAu: fitDistance(7.5e5), lat, lng, rotation: 0 }, 3000);
     },
 
     async frameChapter(instant: boolean): Promise<void> {
@@ -515,6 +583,20 @@ export default defineComponent({
         rt.pbdAlpha = this.pbd ? Math.min(1, rt.pbdAlpha + dt / 2.5) : Math.max(0, rt.pbdAlpha - dt / 0.6);
         rt.pbd.setOpacity(rt.pbdAlpha);
       }
+      // Chapter-5 moments: fade their layers; run the flyby clock.
+      const mWant = this.moment ? 1 : 0;
+      rt.momentAlpha = mWant ? Math.min(1, rt.momentAlpha + 0.03) : Math.max(0, rt.momentAlpha - 0.08);
+      rt.pulsarMap?.setOpacity(this.moment === "pulsars" ? rt.momentAlpha : 0);
+      rt.flyby?.setOpacity(this.moment === "flyby" ? rt.momentAlpha : 0);
+      if (this.moment === "flyby" && rt.flyby) {
+        const f = Math.max(0, Math.min(1, (performance.now() - rt.momentT0) / 20000));
+        // Ease out toward the encounter, then hold there.
+        rt.flybyYears = rt.flyby.encounter.t_years * (1 - Math.pow(1 - f, 2.2));
+        if (performance.now() - rt.lastYearEmit > 200) {
+          rt.lastYearEmit = performance.now();
+          this.$emit("flyby-year", Math.round(rt.flybyYears));
+        }
+      }
       if (this.chapter === "journey" && !this.pbd) {
         const r = Math.max(12, distanceAu(this.craftPos("voyager1")) * 1.15);
         const s = this.shotFor("journey");
@@ -541,6 +623,13 @@ export default defineComponent({
         if (p.id === "acen") { pos = eclXYZ(239.5, -42.6, 277900); }
         if (p.id === "gc") { pos = eclXYZ(266.84, -5.54, 283157); }
         if (p.kind === "galaxy") { pos = rt.galaxyLabels[p.id].position; }
+        if (p.kind === "pulsar" && rt.pulsarMap) {
+          pos = rt.pulsarMap.data.pulsars.find((q) => `psr-${q.bname}` === p.id)!.xyz_au;
+        }
+        if (p.kind === "flyby" && rt.flyby) {
+          const at = rt.flyby.at(p.id === "fb-closest" ? rt.flyby.encounter.t_years : rt.flybyYears);
+          pos = p.id === "fb-star" ? at.star : at.craft;
+        }
         tgt.position.set(pos[0] - off[0], pos[1] - off[1], pos[2] - off[2]);
       }
       const w = window.innerWidth, h = window.innerHeight;
@@ -556,10 +645,24 @@ export default defineComponent({
         }
         if (p.kind === "star") { vis = vis && viewR > 60000; }
         if (far && (p.id === "sun" || p.id === "voyager2")) { vis = false; }
-        if (p.kind === "galaxy") {
+        if (p.kind === "pulsar") {
+          vis = vis && this.moment === "pulsars";
+        } else if (p.kind === "flyby") {
+          vis = vis && this.moment === "flyby" && !!rt.flyby;
+          if (rt.flyby) {
+            const yrs = Math.round(rt.flybyYears).toLocaleString();
+            if (p.id === "fb-craft") { p.label = "Voyager 1"; p.sub = `+${yrs} years`; }
+            if (p.id === "fb-star") { p.label = "Gliese 445"; p.sub = "red dwarf, 114 km/s"; }
+            if (p.id === "fb-closest") {
+              vis = vis && rt.flybyYears >= rt.flyby.encounter.t_years - 50;
+              p.label = `Closest: ${rt.flyby.encounter.min_dist_ly.toFixed(1)} light-years`;
+              p.sub = `about the year ${Math.round(2026 + rt.flyby.encounter.t_years).toLocaleString()}`;
+            }
+          }
+        } else if (p.kind === "galaxy") {
           const l = rt.galaxyLabels[p.id];
           vis = vis && viewR >= l.minViewRAu && viewR <= l.maxViewRAu;
-        } else if (viewR > 1e6) {
+        } else if (viewR > 1e6 || (this.moment === "flyby" && p.id === "voyager1")) {
           vis = false; // galactic scale: the galaxy's own labels take over
         }
         p.x = q ? q.xCss : 0; p.y = q ? q.yCss : 0; p.visible = vis;
@@ -612,6 +715,9 @@ export type { EngineSetting };
 .pin-crossing .pin-dot { width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; background: transparent;
   border: 2px solid var(--pin); box-shadow: 0 0 0 1px #000; }
 .pin-crossing .pin-label { font-size: 12px; opacity: 0.9; }
+.pin-pulsar .pin-dot { width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; }
+.pin-pulsar .pin-label { font-size: 12px; small { font-size: 12px; } }
+.pin-fb-closest .pin-dot { background: transparent; border: 2px solid #ffd166; }
 .pin-star .pin-dot { width: 8px; height: 8px; margin: -4px 0 0 -4px; }
 // Distance ladder (left edge; the story card owns the bottom / right).
 .ladder {

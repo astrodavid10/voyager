@@ -7,12 +7,17 @@
         :scene-ms="sceneMs"
         :shape="shape"
         :pbd="pbd"
+        :moment="moment"
+        @flyby-year="flybyYears = $event"
         @ready="viewReady = true"
       />
     </div>
 
     <header class="vy-top">
       <div class="vy-brand"><brand-mark :size="46" /></div>
+      <button type="button" class="vy-info" aria-label="About and credits" @click="showCredits = true">
+        <font-awesome-icon icon="circle-info" />
+      </button>
       <div class="vy-title">
         <h1>Voyager</h1>
         <p class="vy-hook" aria-live="polite">
@@ -22,10 +27,22 @@
       </div>
     </header>
 
-    <section class="vy-card" :aria-label="chapter.title">
+    <button
+      v-if="cardHidden" type="button" class="vy-show" :aria-label="`Show the story: ${chapter.title}`"
+      @click="cardHidden = false"
+    >
+      <font-awesome-icon icon="chevron-up" /> {{ chapter.title }}
+    </button>
+    <section v-show="!cardHidden" class="vy-card" :aria-label="chapter.title">
       <div class="vy-card-meta">
         <span v-for="t in chapter.tiers" :key="t" class="tier" :class="'tier-' + t.toLowerCase()">{{ t }}</span>
         <span class="vy-progress">{{ index + 1 }} of {{ chapters.length }}</span>
+        <button
+          v-if="!kioskMode" type="button" class="vy-hide" aria-label="Hide the story card to see the view"
+          @click="cardHidden = true"
+        >
+          <font-awesome-icon icon="chevron-down" />
+        </button>
       </div>
       <h2>{{ chapter.title }}</h2>
       <p v-if="chapter.id === 'today'" class="vy-body">{{ todayBody }}</p>
@@ -46,6 +63,36 @@
           <strong class="vy-year">{{ sceneYear }}</strong> {{ journeyCaption || chapter.body }}
         </p>
         <button type="button" class="btn ghost vy-more" @click="startPbd">See the Pale Blue Dot</button>
+      </template>
+      <template v-else-if="chapter.id === 'edge' && moment === 'flyby'">
+        <p class="vy-body">
+          <strong class="vy-year">+{{ flybyYears.toLocaleString() }} years</strong>
+          Voyager 1 is heading toward Ophiuchus, while the red dwarf Gliese 445, now 17 light-years away,
+          races toward the Sun at 114 km/s. In about 44,000 years they pass within
+          1.9 light-years of each other. It is the first star Voyager 1 will pass closer to than the Sun.
+        </p>
+        <p class="vy-note">
+          Straight-line model from Voyager's trajectory and Gaia DR3; Bailer-Jones &amp; Farnocchia (2019) find
+          1.88 light-years in 44,000 years. NASA's older figure was 1.6 light-years in 40,000 years.
+        </p>
+        <button type="button" class="btn ghost vy-more" @click="moment = ''">Back to the edge</button>
+      </template>
+      <template v-else-if="chapter.id === 'edge' && moment === 'pulsars'">
+        <p class="vy-body">
+          The Golden Record's cover shows where Earth is: lines from the Sun to 14 pulsars, each labelled with
+          its spin period in binary, plus a long line to the centre of the Milky Way. Here are those pulsars where
+          astronomers place them today. The directions still hold; the distances were rough guesses in 1977.
+        </p>
+        <p class="vy-note">
+          Pulsars identified by W. R. Johnston; distances from the ATNF Pulsar Catalogue (v2.9.0).
+          Cover: NASA/JPL.
+        </p>
+        <button type="button" class="btn ghost vy-more" @click="moment = ''">Back to the edge</button>
+      </template>
+      <template v-else-if="chapter.id === 'edge'">
+        <p class="vy-body">{{ chapter.body }}</p>
+        <button type="button" class="btn ghost vy-more" @click="moment = 'flyby'">Voyager's next star</button>
+        <button type="button" class="btn ghost vy-more" @click="moment = 'pulsars'">The Golden Record's map home</button>
       </template>
       <p v-else class="vy-body">{{ chapter.body }}</p>
 
@@ -85,6 +132,8 @@
       </nav>
     </section>
 
+    <credits-sheet v-if="showCredits" @close="showCredits = false" />
+
     <template v-if="kioskMode">
       <div v-if="attract" class="vy-attract" aria-hidden="true">
         <p class="vy-attract-line">{{ attractLine }}</p>
@@ -120,6 +169,7 @@ export default defineComponent({
     "voyager-view-3d": defineAsyncComponent(() => import("./components/VoyagerView3D.vue")),
     "crossing-chart": defineAsyncComponent(() => import("./components/CrossingChart.vue")),
     "kiosk-qr": defineAsyncComponent(() => import("./components/KioskQr.vue")),
+    "credits-sheet": defineAsyncComponent(() => import("./components/CreditsSheet.vue")),
   },
   props: {
     kioskMode: { type: Boolean, default: false },
@@ -144,6 +194,10 @@ export default defineComponent({
       playing: false,
       audio: null as HTMLAudioElement | null,
       pbd: false,
+      moment: "",
+      cardHidden: false,
+      showCredits: false,
+      flybyYears: 0,
       attract: false,
       attractFinale: false,
       attractLine: "",
@@ -217,6 +271,7 @@ export default defineComponent({
       cancelAnimationFrame(this.raf);
       this.stopListen();
       this.pbd = false;
+      this.moment = "";
       if (id === "journey") {
         this.runJourney(JOURNEY_START, JOURNEY_SECONDS);
       } else {
