@@ -28,9 +28,10 @@
         <span class="rung-t">{{ r.label }}<small>{{ r.short }}</small></span>
       </button>
     </nav>
-    <p v-if="galaxyCredit" class="v3d-credit">
-      Milky Way image: ESA/Gaia/DPAC, Stefan Payne-Wardenaar, CC BY-SA 3.0 IGO
-    </p>
+    <!-- CC BY-SA attribution while the galaxy is on screen; tap for full credits. -->
+    <button v-if="galaxyCredit" type="button" class="v3d-credit" @click="$emit('show-credits')">
+      Milky Way: ESA/Gaia/DPAC, S. Payne-Wardenaar · CC BY-SA
+    </button>
     <div v-if="!ready && !failed" class="v3d-cover"><loading-record /></div>
     <div v-if="failed" class="v3d-cover v3d-failed">
       <p>The 3D view could not start on this device or network.</p>
@@ -141,7 +142,7 @@ export default defineComponent({
     moment: { type: String, default: "" },
   },
 
-  emits: ["ready", "failed", "flyby-year"],
+  emits: ["ready", "failed", "flyby-year", "show-credits"],
 
   beforeCreate() { installEngine(); },
 
@@ -231,7 +232,7 @@ export default defineComponent({
     flyRung(au: number): void {
       const s = currentShot();
       if (au >= 1e8) {
-        // Galaxy: centre between the Sun and the Galactic centre (8.178 kpc =
+        // Galaxy: center between the Sun and the Galactic center (8.178 kpc =
         // 1.687e9 au toward ecliptic 266.84, -5.54), seen obliquely from the
         // galactic NORTH side (NGP at ecliptic 180.02, +29.81).
         const gc = eclXYZ(266.84, -5.54, 1.687e9 * 0.5);
@@ -413,7 +414,7 @@ export default defineComponent({
       // alpha Cen (SIMBAD/Gaia via the research notes): 1.347 pc at ecliptic (239.5, -42.6).
       pins.push({ id: "acen", kind: "star", label: "Alpha Centauri, the nearest stars", sub: "4.4 light-years",
         color: "#ffe0a3", x: 0, y: 0, visible: false });
-      pins.push({ id: "gc", kind: "star", label: "Toward the Milky Way's centre", sub: "",
+      pins.push({ id: "gc", kind: "star", label: "Toward the Milky Way's center", sub: "",
         color: "#9fdcff", x: 0, y: 0, visible: false });
       this.pins = pins;
       rt.targets = pins.map((p) => ({ id: p.id, position: new Vector3() }));
@@ -475,7 +476,7 @@ export default defineComponent({
         if (iset) {
           (WWTControl.singleton as unknown as { _milkyWayBackground: unknown })._milkyWayBackground = iset;
           // WWT draws this backdrop at (1 - fade)/2, i.e. 50% at best. The
-          // natural-colour panorama is far darker than DSS's boosted colours, so
+          // natural-color panorama is far darker than DSS's boosted colors, so
           // double it (only for our imageset); the distance fade still applies.
           const proto = RenderContext.prototype as unknown as {
             drawImageSet: (this: unknown, is: unknown, opacity: number) => void;
@@ -641,7 +642,7 @@ export default defineComponent({
         if (p.id === "earth") {
           vis = vis && this.chapter === "journey" && (this.pbd || distanceAu(this.craftPos("voyager1")) < 25);
           p.label = "Earth";
-          p.sub = this.pbd ? "14 Feb 1990" : "";
+          p.sub = this.pbd ? "Feb. 14, 1990" : "";
         }
         if (p.kind === "star") { vis = vis && viewR > 60000; }
         if (far && (p.id === "sun" || p.id === "voyager2")) { vis = false; }
@@ -743,11 +744,14 @@ export type { EngineSetting };
   .ladder { width: 96px; .rung-t { font-size: 12px; small { display: none; } } }
 }
 @media (min-width: 900px) { .ladder { bottom: 40px; top: 120px; } }
+// Top right, under the header's info button: clear of the ladder (left), the
+// story card / pill (bottom) and the top-left title.
 .v3d-credit {
-  position: absolute; z-index: 5; left: 12px; bottom: calc(44vh + 14px); margin: 0; max-width: 60vw;
-  font-size: 12px; color: #b9bfe6; text-shadow: 0 1px 3px #000; pointer-events: none;
+  position: absolute; z-index: 6; right: 12px; top: calc(env(safe-area-inset-top, 0px) + 64px);
+  max-width: 190px; padding: 4px 8px; border-radius: 8px; text-align: right;
+  font-size: 12px; line-height: 1.3; color: #cfd6ff; background: rgba(5, 3, 15, 0.55); cursor: pointer;
+  &:focus-visible { outline: 3px solid #ffd166; }
 }
-@media (min-width: 900px) { .v3d-credit { bottom: 12px; left: 180px; } }
 .v3d-cover {
   position: absolute; inset: 0; display: grid; place-items: center; align-content: center; gap: 12px;
   background: #05030f; color: #cfd6ff; font-size: 16px; text-align: center; padding: 24px;

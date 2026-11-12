@@ -2,7 +2,7 @@
 // camera pointed on 1990-02-14 04:48 UTC (data: public/data/pbd/pbd.json from
 // pipeline/pbd.py; docs/RESEARCH-pbd.md).
 //
-// The photo is a flat panel PERPENDICULAR to the camera's boresight, centred on
+// The photo is a flat panel PERPENDICULAR to the camera's boresight, centered on
 // the boresight and placed at Earth's depth (40.47 au from Voyager), sized to the
 // camera's field (0.353 x 0.349 deg -> ~0.25 au across). Seen from Voyager's
 // position, or from anywhere on the Voyager-Earth sightline, Earth sits exactly

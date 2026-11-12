@@ -53,7 +53,7 @@ import {
   addUserRoll, currentZoom, orbitByPixels, zoomTo,
 } from "./voyagerStage";
 
-/** Below this, a two-finger gesture is too small to have a stable centre. */
+/** Below this, a two-finger gesture is too small to have a stable center. */
 const MIN_PINCH_SEPARATION_PX = 24;
 
 /**

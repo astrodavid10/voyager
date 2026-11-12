@@ -73,7 +73,7 @@ export function buildAtlas(cellPx: number): HTMLCanvasElement | null {
   if (!ctx) { return null; }
   const img = ctx.createImageData(canvas.width, canvas.height);
   const at = (index: number): [number, number] => [(index % ATLAS_COLS) * cellPx, Math.floor(index / ATLAS_COLS) * cellPx];
-  // Every profile is forced to zero at the cell edge so neighbours never bleed.
+  // Every profile is forced to zero at the cell edge so neighbors never bleed.
   const edge = (rn: number): number => Math.min(1, (1 - rn) * 4);
 
   let [ox, oy] = at(CELL.glowSoft);

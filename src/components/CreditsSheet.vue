@@ -8,7 +8,7 @@
       <p>
         Where the twin Voyager spacecraft are right now, how they got there, what they found at the edge of the
         Sun's bubble, and how far the Sun's gravity really reaches. Every chapter says whether it shows something
-        <strong class="t-m">measured</strong>, <strong class="t-o">modelled</strong> or
+        <strong class="t-m">measured</strong>, <strong class="t-o">modeled</strong> or
         <strong class="t-p">predicted</strong>.
       </p>
 

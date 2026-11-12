@@ -27,7 +27,7 @@ export async function createPulsarMap(base: string): Promise<PulsarMap> {
   g.setAttribute("position", new Float32BufferAttribute(pos, 3));
   const mat = new LineBasicMaterial({ color: 0xf2cf74, transparent: true, opacity: 0, depthTest: false, blending: AdditiveBlending });
   const rays = new LineSegments(g, mat);
-  // The cover's long line to the Galactic centre.
+  // The cover's long line to the Galactic center.
   const gcG = new BufferGeometry();
   gcG.setAttribute("position", new Float32BufferAttribute([0, 0, 0, ...data.galactic_centre.xyz_au], 3));
   const gcMat = new LineBasicMaterial({ color: 0xffe9b0, transparent: true, opacity: 0, depthTest: false, blending: AdditiveBlending });

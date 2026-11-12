@@ -11,7 +11,7 @@ Geometry (docs/RESEARCH notes; PLAN.md "Research updates"):
   * Termination shock (TS): prolate r = r0 * (1 + k (1 - cos theta)/2) times
     the same kind of N/S factor, solved through V1 94.02 au (2004-12-16) and
     V2 83.67 au (2007-08-31). k = 1 (tail-side ~2x nose, Kleimann 2022 s2.2).
-  * Tails are MODELLED and disputed: one mesh, three shapes as morph targets
+  * Tails are MODELED and disputed: one mesh, three shapes as morph targets
     with identical topology, so the measured nose stays fixed while tails swap:
       comet     (base)   long tail, dissolving past ~400 au, no hard end
       croissant (target) two lobes along the solar axis, closed by ~420 au
@@ -22,7 +22,7 @@ Geometry (docs/RESEARCH notes; PLAN.md "Research updates"):
     SHOCK exists is debated (McComas 2012 vs Scherer & Fichtner 2014).
 
 Frame: heliocentric ecliptic J2000, AU. Alpha (COLOR_0.a) encodes evidence:
-solid where measured, dissolving where modelled.
+solid where measured, dissolving where modeled.
 """
 
 from __future__ import annotations
@@ -166,7 +166,7 @@ def run(out: Path) -> dict:
     # ── heliopause ──
     hp, _ = build_hp(q, a_hp, X, Y, Z)
     base = hp["comet"]
-    # alpha: solid on the nose (measured), dissolving down the tail (modelled)
+    # alpha: solid on the nose (measured), dissolving down the tail (modeled)
     xn = base @ X
     alpha = 0.34 * np.clip(1 - (-xn - 120) / 420, 0, 1) ** 1.4
     alpha = np.maximum(alpha, 0.0)
@@ -178,7 +178,7 @@ def run(out: Path) -> dict:
                  {"name": "bubble", "pos": hp["bubble"], "normals": vertex_normals(hp["bubble"], faces)},
                  {"name": "breathe", "pos": breathe, "normals": nb}],
         material="heliopause",
-        extras={"tier": "MEASURED nose, MODELLED tail", "q_au": round(float(q), 3), "ns_a": round(float(a_hp), 4),
+        extras={"tier": "MEASURED nose, MODELED tail", "q_au": round(float(q), 3), "ns_a": round(float(a_hp), 4),
                 "fit_through": ["V1 2012-08-25 121.60 au", "V2 2018-11-05 119.02 au"],
                 "model": "Rankine half-body r=q/cos(theta/2), Parker 1961; Kleimann+ 2022 eq.8-9"})
     glb.animate_weights("hp_breathe_11yr", hp_node, np.array([0, 2.75, 5.5, 8.25, 11.0]),
@@ -195,7 +195,7 @@ def run(out: Path) -> dict:
                  {"name": "bubble", "pos": ts_bub, "normals": vertex_normals(ts_bub, faces)},
                  {"name": "breathe", "pos": ts_comet * (1 + 6.0 / 90.0), "normals": nts}],
         material="termination_shock",
-        extras={"tier": "MEASURED at two points, MODELLED elsewhere", "r0_au": round(float(r0), 3),
+        extras={"tier": "MEASURED at two points, MODELED elsewhere", "r0_au": round(float(r0), 3),
                 "ns_a": round(float(a_ts), 4),
                 "fit_through": ["V1 2004-12-16 94.02 au", "V2 2007-08-31 83.67 au"]})
     glb.animate_weights("ts_breathe_11yr", ts_node, np.array([0, 2.75, 5.5, 8.25, 11.0]),
@@ -213,7 +213,7 @@ def run(out: Path) -> dict:
     fb = grid_faces(n_bw, N_PHI)
     glb.add_mesh("bow_wave", pts, fb, color=rgba("#8fa3ff", a_bw), normals=vertex_normals(pts, fb),
                  material="bow_wave",
-                 extras={"tier": "MODELLED", "q_au": round(float(qb), 1),
+                 extras={"tier": "MODELED", "q_au": round(float(qb), 1),
                          "note": "bow wave vs weak bow shock is debated (McComas+ 2012; Scherer & Fichtner 2014)"})
 
     d = out / "models"

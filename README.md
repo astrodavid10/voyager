@@ -19,10 +19,10 @@ Built on [WorldWide Telescope](https://worldwidetelescope.org/) (3D solar-system
 
 ## Evidence tiers
 
-Every chapter is labelled with what kind of knowledge it shows:
+Every chapter is labeled with what kind of knowledge it shows:
 
 - **MEASURED:** Voyager's trajectories and crossings, and the IBEX nose distance.
-- **MODELLED:** the heliosphere's tail, the bow wave, the solar-cycle breathing.
+- **MODELED:** the heliosphere's tail, the bow wave, the solar-cycle breathing.
 - **PREDICTED:** the Oort cloud and its simulated spiral, and the tidal boundary.
 
 ## Data and models
@@ -43,12 +43,12 @@ The `pipeline/` folder holds the Python generators. Run them in an env with nump
 - Mission imagery: NASA/JPL-Caltech.
 - Sky panorama: all-sky mosaic by Eckhard Slawik, as published by NOIRLab (credit NOIRLab/NSF/AURA/E. Slawik/M. Zamani, CC BY 4.0), tiled for WorldWide Telescope / AAS.
 - Pale Blue Dot: NASA/JPL-Caltech, *Pale Blue Dot Revisited* (PIA23645). It is placed in 3D along Voyager 1's 1990 line of sight; the camera roll is estimated from the sunlight direction.
-- Milky Way: ESA/Gaia/DPAC, Stefan Payne-Wardenaar, **CC BY-SA 3.0 IGO**. The files in `public/data/galaxy/` stay under that licence (see `ATTRIBUTION.txt`). Spiral arms after Reid et al. 2019.
+- Milky Way: ESA/Gaia/DPAC, Stefan Payne-Wardenaar, **CC BY-SA 3.0 IGO**. The files in `public/data/galaxy/` stay under that license (see `ATTRIBUTION.txt`). Spiral arms after Reid et al. 2019.
 - Pulsar map: pulsars identified on the Golden Record cover as decoded by W. R. Johnston. Current values from the ATNF Pulsar Catalogue v2.9.0 (Manchester et al. 2005).
 - Future flybys: Bailer-Jones & Farnocchia 2019 (RNAAS 3, 59), with Gaia DR3 positions.
 - Golden Record cover: NASA/JPL.
 - Interactive: INTUITIVE® Planetarium at the U.S. Space & Rocket Center, with CosmicDS.
-- 3D overlay bridge: adapted from `three-wwt` (licence in `src/three/three-wwt/LICENSE`).
+- 3D overlay bridge: adapted from `three-wwt` (license in `src/three/three-wwt/LICENSE`).
 
 ## Development
 

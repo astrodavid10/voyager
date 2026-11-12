@@ -27,7 +27,7 @@
 // and 33.95% when the chips cluster near disk center**. Clustering near disk
 // center is not the unusual case: active regions live in the activity belts,
 // which is exactly where they bunch up. So the common case was the broken one.
-// (HANDOFF §8.0 had already flagged two regions near disk centre as "the
+// (HANDOFF §8.0 had already flagged two regions near disk center as "the
 // collision case §8.4 did not anticipate" — this is that case, measured.)
 //
 // The pairwise sweep is O(n^2), which is free here: n is the number of VISIBLE
@@ -111,7 +111,7 @@ export function deCollideLabels(boxes: LabelBox[], options: DeCollideOptions): v
   // This started as a cheaper scan that cached the current chip's group id and
   // relabelled on a merge. It was WRONG in a way only the fuzz found: a merge
   // can relabel the outer chip itself, so the cached id goes stale and later
-  // neighbours join a group that no longer exists. That left 38 overlapping
+  // neighbors join a group that no longer exists. That left 38 overlapping
   // pairs in 20,000 layouts -- rare enough to look like it worked.
   for (let i = 0; i < n; i++) {
     originalY[i] = order[i].y;

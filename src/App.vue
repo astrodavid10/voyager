@@ -9,6 +9,7 @@
         :pbd="pbd"
         :moment="moment"
         @flyby-year="flybyYears = $event"
+        @show-credits="showCredits = true"
         @ready="viewReady = true"
       />
     </div>
@@ -48,7 +49,7 @@
       <p v-if="chapter.id === 'today'" class="vy-body">{{ todayBody }}</p>
       <template v-else-if="chapter.id === 'journey' && pbd">
         <p class="vy-body">
-          <strong class="vy-year">14 Feb 1990</strong> Voyager 1 turned its camera back from 3.7 billion miles
+          <strong class="vy-year">Feb. 14, 1990</strong> Voyager 1 turned its camera back from 3.7 billion miles
           away and photographed Earth: less than a pixel, caught in a ray of scattered sunlight. The photo is
           placed exactly where its camera pointed; Earth sits on its dot.
         </p>
@@ -79,8 +80,8 @@
       </template>
       <template v-else-if="chapter.id === 'edge' && moment === 'pulsars'">
         <p class="vy-body">
-          The Golden Record's cover shows where Earth is: lines from the Sun to 14 pulsars, each labelled with
-          its spin period in binary, plus a long line to the centre of the Milky Way. Here are those pulsars where
+          The Golden Record's cover shows where Earth is: lines from the Sun to 14 pulsars, each labeled with
+          its spin period in binary, plus a long line to the center of the Milky Way. Here are those pulsars where
           astronomers place them today. The directions still hold; the distances were rough guesses in 1977.
         </p>
         <p class="vy-note">

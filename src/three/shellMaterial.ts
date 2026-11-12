@@ -2,8 +2,8 @@
 //
 // A filled translucent shell reads as fog; a rim (fresnel) term makes the
 // edge glow and the face nearly clear, which is how a bubble reads. Built as
-// a ShaderMaterial that includes three's own morph/colour chunks so the GLB's
-// morph targets (comet/croissant/bubble/breathe) and RGBA vertex colours keep
+// a ShaderMaterial that includes three's own morph/color chunks so the GLB's
+// morph targets (comet/croissant/bubble/breathe) and RGBA vertex colors keep
 // working.
 //
 // WWT note (sol footgun 20): view-space z is POSITIVE in front of the camera

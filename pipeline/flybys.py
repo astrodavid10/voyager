@@ -288,7 +288,7 @@ def run(out: Path) -> dict:
         "bodies": bodies,
         "encounters": encounters,
         "notes": [
-            "Gliese 445 does most of the travelling: it is falling toward the Sun at ~111 km/s (Gaia DR3 RV) "
+            "Gliese 445 does most of the traveling: it is falling toward the Sun at ~111 km/s (Gaia DR3 RV) "
             "while Voyager 1 recedes at 16.6 km/s. In ~44,000 yr the star itself passes ~1.0 pc (3.3 ly) from the "
             "Sun (our linear model; see bodies[].closest_to_sun_linear).",
             "Gaia-era distances (Bailer-Jones & Farnocchia 2019): V1-Gliese 445 0.575 pc = 1.88 ly at 44.0 kyr; "

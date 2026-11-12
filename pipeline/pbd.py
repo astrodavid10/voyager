@@ -154,7 +154,7 @@ def measure_sun_axis(native_lum: np.ndarray, earth_xy):
 
 # ---------------------------------------------------------------- camera
 def camera(earth_dir, sun_dir, sun_img_deg, earth_px, size, p):
-    """Orthonormal camera (forward=image centre, right, up) in ecliptic J2000.
+    """Orthonormal camera (forward=image center, right, up) in ecliptic J2000.
 
     sun_img_deg: direction toward the Sun in the image, atan2(dy, dx), y DOWN.
     earth_px: Earth's pixel position (continuous, origin top-left corner).
@@ -162,8 +162,8 @@ def camera(earth_dir, sun_dir, sun_img_deg, earth_px, size, p):
     """
     phi = np.radians(sun_img_deg)
     alpha, beta = np.cos(phi), -np.sin(phi)       # components on (right, up)
-    want_x = (earth_px[0] - size[0] / 2.0) * p    # Earth right of centre -> +
-    want_y = -(earth_px[1] - size[1] / 2.0) * p   # Earth below centre -> - (up axis)
+    want_x = (earth_px[0] - size[0] / 2.0) * p    # Earth right of center -> +
+    want_y = -(earth_px[1] - size[1] / 2.0) * p   # Earth below center -> - (up axis)
     f = unit(earth_dir)
     for _ in range(8):                            # boresight offset + roll, jointly
         r, u = basis_from_earth(f, earth_dir, sun_dir, alpha, beta)
@@ -290,7 +290,7 @@ def run(out: Path, verbose: bool = True) -> dict:
         "image": "pbd/pale-blue-dot.jpg",
         "width_px": size[0], "height_px": size[1],
         "fov_deg_x": round(fov_x, 6), "fov_deg_y": round(fov_y, 6),
-        "projection": "gnomonic (pinhole); image centre = center_dir_ecl; px origin top-left, y down, "
+        "projection": "gnomonic (pinhole); image center = center_dir_ecl; px origin top-left, y down, "
                       "continuous coords (pixel i spans [i, i+1))",
         "tan_per_px": p,
         "earth_px": [round(earth_px[0], 2), round(earth_px[1], 2)],

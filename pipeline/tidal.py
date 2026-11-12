@@ -1,7 +1,7 @@
 """The Sun's tidal (Jacobi) region in the Galactic tide -> models/tidal.glb
 
 Hill approximation in a frame co-rotating with the Galaxy (x toward the
-Galactic centre, y along rotation, z toward the North Galactic Pole):
+Galactic center, y along rotation, z toward the North Galactic Pole):
 
     Phi_eff = -GM/r - 2 A Omega x^2 + 1/2 nu^2 z^2,   Omega = A - B,
     nu^2 = 4 pi G rho0 + 2 (B^2 - A^2)                (Veras & Evans 2013, eq. 10)

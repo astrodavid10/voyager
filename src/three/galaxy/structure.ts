@@ -111,7 +111,7 @@ export function buildModel(guide: Guide | null, lite: boolean): GalaxyModel {
   };
   const puffCell = (): number => [CELL.glowPuffA, CELL.glowPuffB, CELL.glowPuffC][Math.floor(rnd() * 3)];
 
-  // ── texture guide: luminance, colour, and the azimuthal mean profile ──
+  // ── texture guide: luminance, color, and the azimuthal mean profile ──
   const rBins = 64, rMax = 16;
   const mean = new Float32Array(rBins).fill(0.25);
   function texel(x: number, y: number): { lum: number; rgb: RGB } {

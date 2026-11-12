@@ -65,7 +65,7 @@ export function armPoint(arm: ArmDef, betaDeg: number, dR = 0): [number, number]
 }
 
 // ── Bar ──────────────────────────────────────────────────────────────
-// Long bar: half-length ~5 kpc, ~27 deg from the Sun-centre line with the
+// Long bar: half-length ~5 kpc, ~27 deg from the Sun-center line with the
 // NEAR end at positive longitude (Wegg, Gerhard & Portail 2015, MNRAS 450,
 // 4050). In this frame the near end points along (-cos 27, +sin 27).
 export const BAR_ANGLE_RAD = 27 * RAD;

@@ -1,4 +1,4 @@
-"""The Golden Record pulsar map: 14 pulsars + the Galactic-centre line.
+"""The Golden Record pulsar map: 14 pulsars + the Galactic-center line.
 
 Output: ``<out>/pulsars.json``
 
@@ -152,7 +152,7 @@ def fetch_atnf(jnames):
     version = None
     try:
         h = requests.get(ATNF_HOME, timeout=60).text
-        i = h.find("Catalogue Version")
+        i = h.find("Catalog Version")
         if i >= 0:
             version = h[i:i + 40].split('"')[0].strip()
     except Exception:
@@ -267,9 +267,9 @@ def run(out: Path) -> dict:
         "frame": "heliocentric ecliptic J2000 (astropy BarycentricMeanEcliptic equinox J2000), au; x to vernal equinox, z to ecliptic north",
         "kpc_au": KPC_AU,
         "map_conventions": {
-            "drawn_angle": "measured counter-clockwise from the Galactic-centre line (which points right on the cover); "
+            "drawn_angle": "measured counter-clockwise from the Galactic-center line (which points right on the cover); "
                            "it equals Galactic longitude l (median |angle - l| ~ 1-2 deg)",
-            "drawn_length": "total engraved line length / Galactic-centre line length, from the photo. "
+            "drawn_length": "total engraved line length / Galactic-center line length, from the photo. "
                             "Short lines are lengthened to make room for the binary digits, so this is NOT the "
                             "encoded distance for nearby pulsars (U).",
             "map_distance_rel_gc100_johnston": "Johnston's reading of each pulsar's encoded distance with the GC line = 100; "

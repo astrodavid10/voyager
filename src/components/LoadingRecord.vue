@@ -38,7 +38,7 @@ interface Ray { x: number; y: number; ticks: { x: number; y: number; nx: number;
 
 /**
  * Loading mark: the Voyager Golden Record cover's pulsar map drawing itself
- * (14 pulsars + the line to the Galactic centre). Uses public/data/pulsars.json
+ * (14 pulsars + the line to the Galactic center). Uses public/data/pulsars.json
  * (Galactic longitude + distance) when present; until then an evenly spread
  * stand-in. Static under prefers-reduced-motion. The binary period ticks are
  * decorative here (the real encoding is in the cover, NASA/JPL).
@@ -64,7 +64,7 @@ export default defineComponent({
   },
   methods: {
     ray(glDeg: number, len: number): Ray {
-      // Galactic centre to the right (l = 0), l increasing counter-clockwise.
+      // Galactic center to the right (l = 0), l increasing counter-clockwise.
       const a = (glDeg * Math.PI) / 180;
       const ux = Math.cos(a), uy = -Math.sin(a);
       const ticks = [];

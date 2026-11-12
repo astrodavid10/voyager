@@ -1,13 +1,13 @@
 """Milky Way face-on texture for the 3D galaxy layer -> public/data/galaxy/
 
 Source image: "The best Milky Way map, by Gaia" (artist's impression based on
-Gaia data), credit ESA/Gaia/DPAC, Stefan Payne-Wardenaar, licence
+Gaia data), credit ESA/Gaia/DPAC, Stefan Payne-Wardenaar, license
 CC BY-SA 3.0 IGO. https://www.esa.int/ESA_Multimedia/Images/2025/01/The_best_Milky_Way_map_by_Gaia
 The high-contrast 4k square crop is the one WorldWide Telescope hosts at
 https://data1.wwtassets.org/packages/2025/01_gaia_milky_way/Gaia-HighContrast-MilkyWay-4k.jpg
 
 The outputs are downsampled, re-encoded copies (an adaptation), so they are
-shared under the same licence, CC BY-SA 3.0 IGO. See docs/RESEARCH-galaxy.md.
+shared under the same license, CC BY-SA 3.0 IGO. See docs/RESEARCH-galaxy.md.
 
 Standalone (not part of `python -m pipeline all`):
     python pipeline/galaxy.py [source.jpg] [--out public/data/galaxy]

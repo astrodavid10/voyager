@@ -9,9 +9,9 @@
 // x = vernal equinox, z = ecliptic north). Add your objects under `world`,
 // which VoyagerView3D already offsets for WWT's viewTarget (HANDOFF V1).
 // 1 pc = 206,264.806 au; 1 ly = 63,241.077 au. Galactic axes in ecliptic J2000
-// (astropy): toward the Galactic centre (l=0,b=0) = (-0.05488, -0.99382, -0.09648);
+// (astropy): toward the Galactic center (l=0,b=0) = (-0.05488, -0.99382, -0.09648);
 // l=90 = (0.49411, -0.11099, 0.86229); North Galactic Pole = (-0.86767, -0.00035, 0.49715).
-// Sun–Galactic-centre distance: 8.178 kpc (GRAVITY 2019), see frame.ts.
+// Sun–Galactic-center distance: 8.178 kpc (GRAVITY 2019), see frame.ts.
 //
 // No WWT imports here (sol footgun 12): take what you need from the context.
 //
@@ -43,7 +43,7 @@
 // slices a side, ~1,300 sprites, 8k stars; ~90 kB of download.
 //
 // Deep links (debugging): ?gxarms=1 draws the Reid et al. arm ridges, the bar
-// axis and the Sun-centre line; ?gxexp=1.3 scales the exposure.
+// axis and the Sun-center line; ?gxexp=1.3 scales the exposure.
 
 import {
   AddEquation, BufferGeometry, CanvasTexture, CustomBlending, DoubleSide, Float32BufferAttribute,
@@ -77,13 +77,13 @@ export interface GalaxyFrame {
   ms: number;
 }
 
-/** A labelled 3D anchor the host can turn into an HTML pin. */
+/** A labeled 3D anchor the host can turn into an HTML pin. */
 export interface GalaxyLabel {
   id: string;
   label: string;
   /** Optional second line. */
   sub?: string;
-  kind: "sun" | "centre" | "arm";
+  kind: "sun" | "center" | "arm";
   /** Scene coordinates: heliocentric ecliptic J2000, au (add world.position like any pin). */
   position: [number, number, number];
   /** Suggested zoom range (viewRAu) over which the label is worth showing. */
@@ -95,7 +95,7 @@ export interface GalaxyLayer {
   update(frame: GalaxyFrame): void;
   setVisible(visible: boolean): void;
   dispose(): void;
-  /** Labelled anchor points (static; safe to call once and cache). */
+  /** Labeled anchor points (static; safe to call once and cache). */
   labels(): GalaxyLabel[];
   /** Current fade, 0 (hidden) .. 1 (fully on), after the last update(). */
   opacity(): number;
@@ -271,7 +271,7 @@ const SLICES_LITE_KPC = [0.2, 0.7];
 const SLICE_GAIN_FULL = 3.0;
 const SLICE_GAIN_LITE = 1.1;
 
-/** Slab thickness each slice stands for, normalised to sum to 1 per side. */
+/** Slab thickness each slice stands for, normalized to sum to 1 per side. */
 function sliceWeights(h: number[]): number[] {
   const w = h.map((v, i) => {
     const lo = i === 0 ? 0 : (h[i - 1] + v) / 2;
@@ -352,7 +352,7 @@ function buildDebugArms(): BufferGeometry {
   });
   const bx = -BAR_HALF_LEN_KPC * Math.cos(BAR_ANGLE_RAD), by = BAR_HALF_LEN_KPC * Math.sin(BAR_ANGLE_RAD);
   seg([bx, by], [-bx, -by], [1, 1, 1]);           // bar axis, near end on the Sun's +l side
-  seg([-R0_KPC, 0], [0, 0], [0.6, 0.6, 0.6]);     // Sun -> Galactic centre
+  seg([-R0_KPC, 0], [0, 0], [0.6, 0.6, 0.6]);     // Sun -> Galactic center
   seg([-R0_KPC, 0], [-R0_KPC, 2], [0.2, 0.5, 1]); // from the Sun toward l = 90 (the direction of rotation)
   const g = new BufferGeometry();
   g.setAttribute("position", new Float32BufferAttribute(p, 3));
@@ -411,7 +411,7 @@ export async function createGalaxy(ctx: GalaxyContext): Promise<GalaxyLayer | nu
   if (atlas) { disposables.push(atlas); }
   const faders: { mat: ShaderMaterial; gain: number }[] = [];
   const common = { depthTest: false, depthWrite: false, transparent: true, side: DoubleSide };
-  // Colour blends that leave the canvas alpha alone (WWT's page composite must not change).
+  // Color blends that leave the canvas alpha alone (WWT's page composite must not change).
   const screen = {
     blending: CustomBlending, blendEquation: AddEquation, blendSrc: OneFactor, blendDst: OneMinusSrcColorFactor,
     blendSrcAlpha: ZeroFactor, blendDstAlpha: OneFactor,
@@ -495,11 +495,11 @@ export async function createGalaxy(ctx: GalaxyContext): Promise<GalaxyLayer | nu
   };
   const labelList: GalaxyLabel[] = [
     {
-      id: "gx-sun", label: "You are here", sub: "The Sun, 26,700 light-years from the centre", kind: "sun",
+      id: "gx-sun", label: "You are here", sub: "The Sun, 26,700 light-years from the center", kind: "sun",
       position: [0, 0, 0], minViewRAu: 3e7, maxViewRAu: Infinity,
     },
     {
-      id: "gx-centre", label: "Centre of the Milky Way", sub: "Sagittarius A*", kind: "centre",
+      id: "gx-center", label: "Center of the Milky Way", sub: "Sagittarius A*", kind: "center",
       position: toScene(0, 0, 0), minViewRAu: 3e8, maxViewRAu: Infinity,
     },
     ...ARMS.map((arm): GalaxyLabel => {

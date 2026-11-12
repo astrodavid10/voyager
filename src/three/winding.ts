@@ -44,7 +44,7 @@
 //   - the sun-glow halo and the spacecraft marker dots vanished entirely:
 //     three's Sprite quad is wound CCW and SpriteMaterial defaults to
 //     FrontSide, so the flip culled every sprite in the scene.
-// Adding the frame swap cancelled reversal (1), which is why SOLID_SIDE went
+// Adding the frame swap canceled reversal (1), which is why SOLID_SIDE went
 // back to FrontSide in the same change. If that swap is ever removed, this
 // file has to change back in the SAME commit — assertWinding() below is the
 // tripwire that says so.

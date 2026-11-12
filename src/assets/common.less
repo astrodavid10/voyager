@@ -19,12 +19,12 @@
 //     only two of them set a font, so `font: inherit` is the whole reason they
 //     render in the app's 11pt system-ui rather than the UA's 13.3px Arial.
 //     `background-color: transparent; border-style: none` is what makes an
-//     unstyled button invisible chrome instead of a grey lozenge.
+//     unstyled button invisible chrome instead of a gray lozenge.
 //   * line-height: 1.5 -- Vuetify set this on <html>; the UA default is ~1.2,
 //     so dropping it would retighten every wrapped string in the app.
 //   * -webkit-text-size-adjust / -webkit-tap-highlight-color -- mobile-only,
 //     and this is a mobile-first app: without them iOS inflates text in
-//     landscape and flashes a grey box on every tap.
+//     landscape and flashes a gray box on every tap.
 //   * color-scheme: dark -- Vuetify's dark theme injected `:root {
 //     color-scheme: dark }` at runtime. It is what keeps the UA's own bits
 //     (Firefox scrollbars on the internally-scrolling panels, form-control

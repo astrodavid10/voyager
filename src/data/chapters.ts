@@ -2,7 +2,7 @@
 // miles and light time before au, and the fixed phrase "left the Sun's
 // bubble, not the solar system" (AUDIT-UI #12).
 
-export type Tier = "MEASURED" | "MODELLED" | "PREDICTED";
+export type Tier = "MEASURED" | "MODELED" | "PREDICTED";
 
 export interface Chapter {
   id: string;
@@ -34,7 +34,7 @@ export const CHAPTERS: Chapter[] = [
   {
     id: "bubble",
     title: "Nobody knows the shape yet",
-    tiers: ["MEASURED", "MODELLED"],
+    tiers: ["MEASURED", "MODELED"],
     body: "The Sun blows a bubble of solar wind, the heliosphere. Voyager 1 crossed its edge, "
       + "the heliopause, in 2012 and Voyager 2 in 2018: two measured points. The tail is "
       + "inference, and models disagree. NASA's IMAP mission is mapping it now.",
@@ -54,7 +54,7 @@ export const CHAPTERS: Chapter[] = [
     title: "Where the Sun's pull gives way",
     tiers: ["PREDICTED"],
     body: "About 283,000 times farther than Earth is from the Sun, the Galaxy's pull starts to win "
-      + "over the Sun's. It is a fuzzy zone, not a wall, stretched toward the centre of the Milky Way. "
+      + "over the Sun's. It is a fuzzy zone, not a wall, stretched toward the center of the Milky Way. "
       + "Voyager has left the Sun's bubble, not the solar system. "
       + "Each Voyager carries a Golden Record of sounds and images from Earth for whoever finds it.",
     next: "Back to today",

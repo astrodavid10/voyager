@@ -5,7 +5,7 @@ Output (in ``<out>/crossings/``):
   v1_ts.json v2_ts.json v1_hp.json v2_hp.json
                         one file per crossing: daily series over about +/-1.5 yr
   plasma_waves.json     V1 PWS interstellar plasma oscillations: audio/spectrogram
-                        URLs + licence, f_p -> n_e relation, published densities
+                        URLs + license, f_p -> n_e relation, published densities
 
 Every number in the series comes from a file downloaded here from NASA SPDF.
 Nothing is interpolated or gap-filled. Each crossing file has one shared daily
@@ -450,7 +450,7 @@ def plasma_waves() -> dict:
              "license": "NASA media are generally not subject to copyright in the US (NASA Images and "
                         "Media Usage Guidelines); because the credit includes the University of Iowa, "
                         "attribute 'NASA/JPL-Caltech/University of Iowa' and treat the audio as CC BY 4.0 "
-                        "(the University of Iowa space-audio licence)."},
+                        "(the University of Iowa space-audio license)."},
             {"title": "University of Iowa: Voyager 1 PWS electron plasma oscillations beyond the heliopause",
              "kind": "video (mp4) with audio; 225 days compressed to ~12 s, frequencies preserved",
              "page": "https://space.physics.uiowa.edu/plasma-wave/voyager/v1pws_interstellar_epo.html",

@@ -1,12 +1,12 @@
 """Bake Voyager 1/2 and context-craft trajectories from JPL Horizons.
 
 Output (in ``<out>/ephem/``):
-  trajectories.json  meta: per body the start date, step, count, colour, and the
+  trajectories.json  meta: per body the start date, step, count, color, and the
                      binary file holding its positions
   <id>.bin           float32 little-endian, n x 3, heliocentric ecliptic J2000 AU
 
-The frame is ecliptic J2000 (REF_PLANE=ECLIPTIC, REF_SYSTEM=ICRF), centred on the
-Sun's body centre (500@10), the same frame Sol's three.js scene uses. Epoch i is
+The frame is ecliptic J2000 (REF_PLANE=ECLIPTIC, REF_SYSTEM=ICRF), centered on the
+Sun's body center (500@10), the same frame Sol's three.js scene uses. Epoch i is
 ``start + i * step_days`` (TDB from Horizons). The app treats it as UTC, which is
 69 s off, invisible at this scale.
 
@@ -26,7 +26,7 @@ import requests
 
 API = "https://ssd.jpl.nasa.gov/api/horizons.api"
 
-# id, Horizons command, display name, colour (Okabe-Ito), start, stop, step days.
+# id, Horizons command, display name, color (Okabe-Ito), start, stop, step days.
 # Earth is needed for the one-way light time FROM EARTH (not the Sun).
 BODIES = [
     ("voyager1", "-31", "Voyager 1", "#E69F00", "1977-09-06", "2035-12-31", 1),
@@ -75,12 +75,12 @@ def run(out: Path, verbose: bool = True) -> dict:
         "time_note": "epochs are TDB at 00:00; epoch i = start + i*step_days",
         "bodies": [],
     }
-    for bid, cmd, name, colour, start, stop, step in BODIES:
+    for bid, cmd, name, color, start, stop, step in BODIES:
         t0 = time.perf_counter()
         xyz = fetch(cmd, start, stop, step).astype("<f4")
         (d / "{0}.bin".format(bid)).write_bytes(xyz.tobytes())
         meta["bodies"].append({
-            "id": bid, "horizons_id": cmd, "name": name, "color": colour,
+            "id": bid, "horizons_id": cmd, "name": name, "color": color,
             "start": start, "step_days": step, "count": int(len(xyz)),
             "file": "ephem/{0}.bin".format(bid),
         })

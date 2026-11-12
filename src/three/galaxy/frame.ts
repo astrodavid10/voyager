@@ -2,10 +2,10 @@
 // Milky Way frame: galactocentric kpc -> heliocentric ecliptic J2000 au
 // =====================================================================
 // Everything in the galaxy layer is authored in GALACTOCENTRIC kpc:
-//   +x = the Sun -> Galactic centre direction (l = 0, b = 0)
+//   +x = the Sun -> Galactic center direction (l = 0, b = 0)
 //   +y = the direction of Galactic rotation at the Sun (l = 90)
 //   +z = the North Galactic Pole
-// with the Galactic centre at the origin and the mid-plane at z = 0. The Sun
+// with the Galactic center at the origin and the mid-plane at z = 0. The Sun
 // therefore sits at (-R0, 0, +Z_SUN). Seen from +z (north) the Galaxy turns
 // CLOCKWISE: the Sun moves toward +y.
 //
@@ -26,7 +26,7 @@ import { Matrix4, Vector3 } from "three";
 
 export const AU_PER_PC = 206264.806;
 export const AU_PER_KPC = AU_PER_PC * 1000;
-/** Sun to Galactic-centre distance, kpc (GRAVITY 2019). */
+/** Sun to Galactic-center distance, kpc (GRAVITY 2019). */
 export const R0_KPC = 8.178;
 /** Height of the Sun above the Galactic mid-plane, kpc (Bennett & Bovy 2019). */
 export const Z_SUN_KPC = 0.0208;
@@ -38,7 +38,7 @@ export const GAL_Z_ECL: readonly [number, number, number] = [-0.86767, -0.00035,
 
 /**
  * Side of the square face-on texture, kpc. The image is a view from the North
- * Galactic Pole with the Galactic centre in the middle, the Sun below it and
+ * Galactic Pole with the Galactic center in the middle, the Sun below it and
  * l = 90 to the LEFT; the half-width is 2.4 R0 (the scale JWST's Galaxy3D used,
  * and the one at which the Reid et al. 2019 arm fits land on the painted arms).
  */
@@ -56,7 +56,7 @@ export function galaxyMatrix(): Matrix4 {
     console.warn("[galaxy] Galactic axes are not a right-handed orthonormal set; y.l90 =", check);
   }
   const s = AU_PER_KPC;
-  // Galactic centre in the scene: R0 along +x, and the mid-plane Z_SUN below the Sun.
+  // Galactic center in the scene: R0 along +x, and the mid-plane Z_SUN below the Sun.
   const o = new Vector3().addScaledVector(x, R0_KPC * s).addScaledVector(z, -Z_SUN_KPC * s);
   return new Matrix4().set(
     x.x * s, y.x * s, z.x * s, o.x,
