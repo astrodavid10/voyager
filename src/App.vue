@@ -10,16 +10,17 @@
         :moment="moment"
         @flyby-year="flybyYears = $event"
         @show-credits="showCredits = true"
+        @framed="onFramed"
         @ready="viewReady = true"
       />
     </div>
 
     <header class="vy-top">
-      <div class="vy-brand"><brand-mark :size="46" /></div>
-      <button type="button" class="vy-info" aria-label="About and credits" @click="showCredits = true">
+      <div class="vy-brand" data-obstacle><brand-mark :size="46" /></div>
+      <button type="button" class="vy-info" data-obstacle aria-label="About and credits" @click="showCredits = true">
         <font-awesome-icon icon="circle-info" />
       </button>
-      <div class="vy-title">
+      <div class="vy-title" data-obstacle>
         <h1>Voyager</h1>
         <p class="vy-hook" aria-live="polite">
           <template v-if="hook">{{ hook }}</template>
@@ -29,12 +30,12 @@
     </header>
 
     <button
-      v-if="cardHidden" type="button" class="vy-show" :aria-label="`Show the story: ${chapter.title}`"
+      v-if="cardHidden" type="button" class="vy-show" data-obstacle :aria-label="`Show the story: ${chapter.title}`"
       @click="cardHidden = false"
     >
       <font-awesome-icon icon="chevron-up" /> {{ chapter.title }}
     </button>
-    <section v-show="!cardHidden" class="vy-card" :aria-label="chapter.title">
+    <section v-show="!cardHidden" class="vy-card" data-obstacle :aria-label="chapter.title">
       <div class="vy-card-meta">
         <span v-for="t in chapter.tiers" :key="t" class="tier" :class="'tier-' + t.toLowerCase()">{{ t }}</span>
         <span class="vy-progress">{{ index + 1 }} of {{ chapters.length }}</span>
@@ -197,6 +198,8 @@ export default defineComponent({
       pbd: false,
       moment: "",
       cardHidden: false,
+      journeyWaiting: false,
+      journeyFallback: 0,
       showCredits: false,
       flybyYears: 0,
       attract: false,
@@ -274,7 +277,12 @@ export default defineComponent({
       this.pbd = false;
       this.moment = "";
       if (id === "journey") {
-        this.runJourney(JOURNEY_START, JOURNEY_SECONDS);
+        // Hold at launch until the camera has zoomed in on the inner solar
+        // system (the view emits "framed"); a fallback starts it regardless.
+        this.sceneMs = JOURNEY_START;
+        this.journeyWaiting = true;
+        window.clearTimeout(this.journeyFallback);
+        this.journeyFallback = window.setTimeout(() => this.onFramed("journey"), 6000);
       } else {
         this.sceneMs = this.now;
       }
@@ -296,7 +304,10 @@ export default defineComponent({
     }
     if (this.kioskMode) { this.initKiosk(); }
     // Start WWT only after the hook has painted.
-    requestAnimationFrame(() => { this.startView = true; });
+    // rAF lets the hook paint first; the timer covers a backgrounded tab (rAF paused).
+    const go = () => { this.startView = true; };
+    requestAnimationFrame(go);
+    window.setTimeout(go, 400);
     window.setInterval(() => {
       this.now = nowMs();
       if (this.chapter.id !== "journey") { this.sceneMs = this.now; }
@@ -316,6 +327,12 @@ export default defineComponent({
         if (f < 1) { this.raf = requestAnimationFrame(step); }
       };
       this.raf = requestAnimationFrame(step);
+    },
+    onFramed(ch: string): void {
+      if (ch !== "journey" || !this.journeyWaiting || this.chapter.id !== "journey") { return; }
+      this.journeyWaiting = false;
+      window.clearTimeout(this.journeyFallback);
+      this.runJourney(JOURNEY_START, JOURNEY_SECONDS);
     },
     startPbd(): void {
       cancelAnimationFrame(this.raf);
@@ -352,13 +369,13 @@ export default defineComponent({
       const script: [number, () => void][] = [
         [0, () => { this.attractFinale = false; this.shape = "comet"; this.index = 0; this.attractLine = v1; }],
         [15, () => { this.index = 1; this.attractLine = "Launched in 1977. Still talking to us."; }],
-        [40, () => { this.index = 2; this.attractLine = "It left the Sun's bubble in 2012. Nobody knows the bubble's shape."; }],
-        [45, () => { this.shape = "croissant"; }],
-        [50, () => { this.shape = "bubble"; }],
-        [56, () => { this.shape = "comet"; this.index = 3; this.attractLine = "30,000 more years to cross the Oort cloud"; }],
-        [72, () => { this.index = 4; this.attractLine = "Out of the Sun's bubble. Not out of the solar system. Not even close."; }],
-        [88, () => { this.index = 0; this.attractFinale = true; this.attractLine = "Touch to explore, or take it home"; }],
-        [100, () => this.startAttract()],
+        [43, () => { this.index = 2; this.attractLine = "It left the Sun's bubble in 2012. Nobody knows the bubble's shape."; }],
+        [48, () => { this.shape = "croissant"; }],
+        [53, () => { this.shape = "bubble"; }],
+        [59, () => { this.shape = "comet"; this.index = 3; this.attractLine = "30,000 more years to cross the Oort cloud"; }],
+        [75, () => { this.index = 4; this.attractLine = "Out of the Sun's bubble. Not out of the solar system. Not even close."; }],
+        [91, () => { this.index = 0; this.attractFinale = true; this.attractLine = "Touch to explore, or take it home"; }],
+        [103, () => this.startAttract()],
       ];
       this.clearAttractTimers();
       for (const [t, fn] of script) {

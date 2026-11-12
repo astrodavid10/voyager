@@ -7,11 +7,11 @@
         v-show="p.visible"
         :key="p.id"
         class="pin"
-        :class="['pin-' + p.kind, 'pin-' + p.id, { flip: p.x > vw * 0.58 }]"
+        :class="['pin-' + p.kind, 'pin-' + p.id, { flip: p.side === 'l', ring: p.ring }]"
         :style="{ transform: `translate(${p.x}px, ${p.y}px)`, '--pin': p.color }"
       >
         <span class="pin-dot" />
-        <span class="pin-label">{{ p.label }}<small v-if="p.sub">{{ p.sub }}</small></span>
+        <span v-show="!p.labelHidden" class="pin-label">{{ p.label }}<small v-if="p.sub">{{ p.sub }}</small></span>
       </div>
     </div>
     <nav v-if="ready" class="ladder" aria-label="Distance from the Sun">
@@ -20,6 +20,7 @@
       <button
         v-for="(r, i) in ladder" :key="r.id" type="button" class="rung"
         :class="{ hot: r.id === 'voyager1' }"
+        data-obstacle
         :style="{ top: (1 - i / (ladder.length - 1)) * 100 + '%' }"
         :aria-label="`Fly out to ${r.label}, ${r.au.toLocaleString()} au`"
         @click="flyRung(r.au)"
@@ -29,7 +30,7 @@
       </button>
     </nav>
     <!-- CC BY-SA attribution while the galaxy is on screen; tap for full credits. -->
-    <button v-if="galaxyCredit" type="button" class="v3d-credit" @click="$emit('show-credits')">
+    <button v-if="galaxyCredit" type="button" class="v3d-credit" data-obstacle @click="$emit('show-credits')">
       Milky Way: ESA/Gaia/DPAC, S. Payne-Wardenaar · CC BY-SA
     </button>
     <div v-if="!ready && !failed" class="v3d-cover"><loading-record /></div>
@@ -96,6 +97,56 @@ const OVERALL_TIMEOUT_MS = 20000;
 interface Pin {
   id: string; kind: string; label: string; sub: string; color: string;
   x: number; y: number; visible: boolean;
+  /** Label side chosen by the declutter pass ("r" default, "l" flipped). */
+  side?: "r" | "l";
+  /** Dot only: the label would have covered a higher-priority label. */
+  labelHidden?: boolean;
+  /** Draw as an open ring (Pale Blue Dot Earth: the real dot shows through). */
+  ring?: boolean;
+}
+
+/** Lower = placed first, so it wins a collision. */
+const PIN_PRIORITY: Record<string, number> = {
+  craft: 1, flyby: 2, sun: 3, planet: 4, galaxy: 5, crossing: 6, star: 6, pulsar: 8,
+};
+
+interface Rect { x0: number; y0: number; x1: number; y1: number }
+const placed: Rect[] = [];
+const order: Pin[] = [];
+
+/**
+ * Label declutter, every frame (AUDIT: labels must not cover each other).
+ * Pins are placed in priority order; each label tries the right side of its
+ * dot, then the left; if both collide with an already-placed label (or leave
+ * the screen), only the dot is drawn. Widths are estimated from text length
+ * (no DOM measuring per frame). Markers never move.
+ */
+function declutter(pins: Pin[], vw: number, vh: number, obstacles: Rect[]): void {
+  order.length = 0;
+  for (const p of pins) { if (p.visible) { order.push(p); } }
+  order.sort((a, b) => (PIN_PRIORITY[a.kind] ?? 9) - (PIN_PRIORITY[b.kind] ?? 9));
+  placed.length = 0;
+  // UI chrome (header, ladder, card, credit, QR) is pre-placed: labels yield to it.
+  for (const o of obstacles) { placed.push(o); }
+  for (const p of order) {
+    const small = p.kind === "pulsar" || p.kind === "crossing";
+    const cw = small ? 6.6 : 7.6;
+    const w = Math.min(170, Math.max(p.label.length, p.sub.length * 0.92) * cw) + 6;
+    const h = p.sub ? 34 : 19;
+    const gap = p.ring ? 22 : 11;
+    const right: Rect = { x0: p.x + gap, y0: p.y - 10, x1: p.x + gap + w, y1: p.y - 10 + h };
+    const left: Rect = { x0: p.x - gap - w, y0: right.y0, x1: p.x - gap, y1: right.y1 };
+    const fits = (r: Rect) => r.x0 >= 2 && r.x1 <= vw - 2 && r.y0 >= 0 && r.y1 <= vh
+      && !placed.some((q) => r.x0 < q.x1 && r.x1 > q.x0 && r.y0 < q.y1 && r.y1 > q.y0);
+    if (fits(right)) { p.side = "r"; p.labelHidden = false; placed.push(right); } else if (fits(left)) {
+      p.side = "l"; p.labelHidden = false; placed.push(left);
+    } else {
+      p.labelHidden = true;
+    }
+    // The dot itself is an obstacle for lower-priority labels.
+    const d = p.ring ? 17 : 8;
+    placed.push({ x0: p.x - d, y0: p.y - d, x1: p.x + d, y1: p.y + d });
+  }
 }
 
 interface Runtime {
@@ -115,6 +166,7 @@ interface Runtime {
   pbdAlpha: number;
   pulsarMap: PulsarMap | null;
   flyby: Flyby | null;
+  obstacles: Rect[];
   momentAlpha: number;
   momentT0: number;
   flybyYears: number;
@@ -142,7 +194,7 @@ export default defineComponent({
     moment: { type: String, default: "" },
   },
 
-  emits: ["ready", "failed", "flyby-year", "show-credits"],
+  emits: ["ready", "failed", "flyby-year", "show-credits", "framed"],
 
   beforeCreate() { installEngine(); },
 
@@ -158,7 +210,7 @@ export default defineComponent({
       frame: 0,
       rt: markRaw({
         stage: null, gestures: null, eph: null, trails: {}, targets: [], projected: [],
-        world: null, helio: null, offset: [0, 0, 0], shellMats: {}, tidal: null, oort: null, galaxy: null, galaxyLabels: {}, pbd: null, pbdAlpha: 0, pulsarMap: null, flyby: null, momentAlpha: 0, momentT0: 0, flybyYears: 0,
+        world: null, helio: null, offset: [0, 0, 0], shellMats: {}, tidal: null, oort: null, galaxy: null, galaxyLabels: {}, pbd: null, pbdAlpha: 0, pulsarMap: null, flyby: null, obstacles: [], momentAlpha: 0, momentT0: 0, flybyYears: 0,
         lastYearEmit: 0, lastFadeMs: 0, lastTimeSync: 0,
         timer: 0, destroyed: false,
       } as Runtime),
@@ -227,6 +279,18 @@ export default defineComponent({
 
   methods: {
     retry(): void { window.location.reload(); },
+
+    /** Screen rects of every [data-obstacle] element (UI chrome), ~4 Hz. */
+    refreshObstacles(): void {
+      const out: Rect[] = [];
+      document.querySelectorAll<HTMLElement>("[data-obstacle]").forEach((el) => {
+        const r = el.getBoundingClientRect();
+        if (r.width > 0 && r.height > 0 && el.offsetParent !== null) {
+          out.push({ x0: r.left - 4, y0: r.top - 4, x1: r.right + 4, y1: r.bottom + 4 });
+        }
+      });
+      this.rt.obstacles = out;
+    },
 
     /** Distance ladder: frame the Sun out to this radius (AUDIT-UI #8). */
     flyRung(au: number): void {
@@ -380,7 +444,9 @@ export default defineComponent({
 
     async frameChapter(instant: boolean): Promise<void> {
       if (!this.ready) { return; }
-      await flyTo(this.shotFor(this.chapter), instant ? 0 : 3000);
+      const ch = this.chapter;
+      await flyTo(this.shotFor(ch), instant ? 0 : 3000);
+      if (ch === this.chapter) { this.$emit("framed", ch); }
     },
 
     // ── layers ───────────────────────────────────────────────────────
@@ -643,6 +709,7 @@ export default defineComponent({
           vis = vis && this.chapter === "journey" && (this.pbd || distanceAu(this.craftPos("voyager1")) < 25);
           p.label = "Earth";
           p.sub = this.pbd ? "Feb. 14, 1990" : "";
+          p.ring = this.pbd;
         }
         if (p.kind === "star") { vis = vis && viewR > 60000; }
         if (far && (p.id === "sun" || p.id === "voyager2")) { vis = false; }
@@ -677,6 +744,8 @@ export default defineComponent({
             : `${distanceAu(positionAt(eph.bodies[p.id], ms)).toFixed(0)} au`;
         }
       }
+      if ((this.frame & 15) === 1) { this.refreshObstacles(); }
+      declutter(this.pins, w, h, rt.obstacles);
     },
   },
 });
@@ -708,8 +777,16 @@ export type { EngineSetting };
     small { display: block; font-size: 13px; color: var(--pin); font-variant-numeric: tabular-nums; }
   }
 }
-.pin.flip { flex-direction: row-reverse; .pin-label { text-align: right; transform: translateX(calc(-100% - 16px)); } }
-.pin.flip .pin-label { position: absolute; left: 0; top: -8px; }
+.pin { display: block; width: 0; height: 0; }
+.pin .pin-dot { position: absolute; left: 0; top: 0; }
+.pin .pin-label { position: absolute; left: 11px; top: -10px; margin-top: 0; }
+.pin.flip .pin-label { left: auto; right: 11px; text-align: right; }
+.pin.ring .pin-dot {
+  width: 30px; height: 30px; margin: -15px 0 0 -15px; background: transparent;
+  border: 2px solid var(--pin); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.6);
+}
+.pin.ring .pin-label { left: 22px; }
+.pin.ring.flip .pin-label { left: auto; right: 22px; }
 .pin-craft .pin-dot { width: 14px; height: 14px; margin: -7px 0 0 -7px; }
 .pin-voyager2 .pin-dot { border-radius: 2px; transform: rotate(45deg); }
 .pin-sun .pin-dot { background: #ffd166; }

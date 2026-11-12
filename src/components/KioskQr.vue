@@ -1,5 +1,5 @@
 <template>
-  <aside v-if="ok" class="kqr" :class="{ big }" aria-label="Take it with you">
+  <aside v-if="ok" class="kqr" data-obstacle :class="{ big }" aria-label="Take it with you">
     <qrcode-vue :value="url" :size="big ? 200 : 96" level="M" render-as="svg" background="#ffffff" foreground="#05030f" />
     <p>{{ big ? "Take Voyager home: scan with your phone camera" : "Take it with you" }}</p>
   </aside>
