@@ -137,29 +137,49 @@ export default defineComponent({
     v1Hours(): number | null {
       return this.eph ? lightHoursFromEarth(this.eph, "voyager1", this.now) : null;
     },
+    /**
+     * The moment Earth-to-V1 light time first reaches 24 h (~2026-11-18 UTC),
+     * found from a FIXED search start so it is still known after the crossing.
+     * Checked against Horizons to 2030: it never dips back below (HANDOFF).
+     */
     crossMs(): number | null {
-      return this.eph ? whenLightTimeReaches(this.eph, "voyager1", 24, this.now) : null;
+      return this.eph ? whenLightTimeReaches(this.eph, "voyager1", 24, Date.parse("2026-11-01T00:00:00Z")) : null;
+    },
+    crossDate(): string {
+      return this.crossMs
+        ? new Date(this.crossMs).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
+        : "";
+    },
+    /** Hours from the crossing to now: negative before it, positive after. */
+    sinceCrossH(): number | null {
+      return this.crossMs ? (this.now - this.crossMs) / 3600000 : null;
     },
     hook(): string {
       if (this.v1Hours === null) { return ""; }
       const lt = formatLightTime(this.v1Hours);
-      if (this.v1Hours >= 24) { return `Voyager 1 is now more than one light-day from Earth (${lt}).`; }
+      const since = this.sinceCrossH;
+      if (since !== null && since >= 0 && since < 36) { return `Today Voyager 1 reached one light-day from Earth (${lt}).`; }
+      if (this.v1Hours >= 24) { return `Voyager 1 is more than one light-day from Earth: ${lt} of light.`; }
       return `Voyager 1 is ${lt} of light from Earth.`;
     },
     todayBody(): string {
       if (!this.eph || this.v1Hours === null) { return ""; }
       const v1 = positionAt(this.eph.bodies.voyager1, this.now);
       const miles = formatMiles(distanceAu(v1, positionAt(this.eph.bodies.earth, this.now)));
-      if (this.v1Hours >= 24) {
-        return `Voyager 1 is ${miles} away. A radio signal now takes more than a full day to reach it, `
-          + "and it will never be closer than one light-day again.";
+      const lt = formatLightTime(this.v1Hours);
+      const since = this.sinceCrossH;
+      if (since !== null && since >= 0) {
+        const first = since < 36 ? "Today it became" : `On ${this.crossDate} it became`;
+        return `${first} the first human-made object one light-day from Earth. Voyager 1 is ${miles} away; `
+          + `a radio signal now takes ${lt} to reach it, and it will never be closer than one light-day again.`;
       }
       let when = "";
-      if (this.crossMs) {
-        const dh = (this.crossMs - this.now) / 3600000;
-        when = dh < 48 ? `about ${Math.round(dh)} hours` : `about ${Math.floor(dh / 24)} days ${Math.round(dh % 24)} hours`;
+      if (since !== null) {
+        const totalH = Math.max(1, Math.round(-since));
+        when = totalH < 48 ? `about ${totalH} hours`
+          : `about ${Math.floor(totalH / 24)} days ${totalH % 24} hours`;
       }
-      return `Voyager 1 is ${miles} away. A radio signal takes ${formatLightTime(this.v1Hours)} to reach it. `
+      return `Voyager 1 is ${miles} away. A radio signal takes ${lt} to reach it. `
         + (when ? `In ${when} it will take a full day, and it stays beyond one light-day from then on.` : "");
     },
     sceneYear(): string { return new Date(this.sceneMs).getUTCFullYear().toString(); },
