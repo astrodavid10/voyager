@@ -1,0 +1,136 @@
+{
+ "frame": "heliocentric ecliptic J2000",
+ "units": "au",
+ "stars": [
+  {
+   "id": "acen",
+   "label": "Alpha Centauri, the nearest stars",
+   "dist_pc": 1.3475,
+   "dist_ly": 4.4,
+   "mass_msun": 2.11,
+   "xyz_au": [
+    -103911.3,
+    -176261.1,
+    -188111.9
+   ],
+   "ecl_lon_lat_deg": [
+    239.48,
+    -42.59
+   ],
+   "gal_l_b_deg": [
+    315.73,
+    -0.68
+   ],
+   "own_tidal_radius_pc": 1.76
+  },
+  {
+   "id": "barnard",
+   "label": "Barnard's Star",
+   "dist_pc": 1.8282,
+   "dist_ly": 6.0,
+   "mass_msun": 0.16,
+   "xyz_au": [
+    -3593.8,
+    -332527.0,
+    177798.3
+   ],
+   "ecl_lon_lat_deg": [
+    269.38,
+    28.13
+   ],
+   "gal_l_b_deg": [
+    31.01,
+    14.06
+   ],
+   "own_tidal_radius_pc": 0.745
+  },
+  {
+   "id": "luhman16",
+   "label": "Luhman 16, two brown dwarfs",
+   "dist_pc": 1.996,
+   "dist_ly": 6.5,
+   "mass_msun": 0.068,
+   "xyz_au": [
+    -234328.7,
+    -62843.5,
+    -332628.0
+   ],
+   "ecl_lon_lat_deg": [
+    195.01,
+    -53.89
+   ],
+   "gal_l_b_deg": [
+    285.19,
+    5.29
+   ],
+   "own_tidal_radius_pc": 0.56
+  },
+  {
+   "id": "wolf359",
+   "label": "Wolf 359",
+   "dist_pc": 2.4086,
+   "dist_ly": 7.9,
+   "mass_msun": 0.11,
+   "xyz_au": [
+    -474274.0,
+    147918.0,
+    1998.9
+   ],
+   "ecl_lon_lat_deg": [
+    162.68,
+    0.23
+   ],
+   "gal_l_b_deg": [
+    244.05,
+    56.12
+   ],
+   "own_tidal_radius_pc": 0.658
+  },
+  {
+   "id": "lalande",
+   "label": "Lalande 21185",
+   "dist_pc": 2.5469,
+   "dist_ly": 8.3,
+   "mass_msun": 0.39,
+   "xyz_au": [
+    -412238.9,
+    218204.0,
+    241710.3
+   ],
+   "ecl_lon_lat_deg": [
+    152.11,
+    27.39
+   ],
+   "gal_l_b_deg": [
+    185.12,
+    65.43
+   ],
+   "own_tidal_radius_pc": 1.003
+  },
+  {
+   "id": "sirius",
+   "label": "Sirius",
+   "dist_pc": 2.6371,
+   "dist_ly": 8.6,
+   "mass_msun": 3.08,
+   "xyz_au": [
+    -101965.0,
+    406488.6,
+    -346759.2
+   ],
+   "ecl_lon_lat_deg": [
+    104.08,
+    -39.61
+   ],
+   "gal_l_b_deg": [
+    227.23,
+    -8.89
+   ],
+   "own_tidal_radius_pc": 1.997
+  }
+ ],
+ "sources": [
+  "SIMBAD (positions, distances from Gaia DR3 / Hipparcos parallaxes)",
+  "tidal radius scaling: Veras & Evans 2013"
+ ]
+}

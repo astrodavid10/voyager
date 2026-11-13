@@ -24,7 +24,9 @@ export interface FamilyFrame {
   planet: string; image: string; fov_deg_x: number; fov_deg_y: number;
   center_dir_ecl: V3; up_ecl: V3; right_ecl: V3; v1_au: V3; planet_au: V3;
 }
-interface WidePanel { image: string; corners_on_unit_plane: V3[] }
+interface WidePanel { image: string; corners_on_unit_plane: V3[]; mesh?: MosaicMesh }
+/** pipeline/family_mesh.py: the mosaic as a grid of sky directions from Voyager 1. */
+export interface MosaicMesh { image: string; nx: number; ny: number; dirs: number[]; center_dir_ecl: V3; up_ecl: V3 }
 export interface FamilyData {
   frames: FamilyFrame[]; mosaic: WidePanel; sun_earth_venus: WidePanel; v1_au: V3;
   not_imaged: Record<string, string>; credit: string;
@@ -75,8 +77,37 @@ export async function createFamilyPortrait(base: string): Promise<FamilyPortrait
     mesh.frustumCulled = false;
     group.add(mesh);
   };
+  // The mosaic as a warped grid of sky directions (every planet letter on its
+  // planet from Voyager 1); the flat card is the fallback for an old family.json.
+  const mesh = async (mm: MosaicMesh, d: number, order: number) => {
+    const pos: number[] = [], uv: number[] = [], idx: number[] = [];
+    for (let r = 0; r < mm.ny; r++) {
+      for (let c = 0; c < mm.nx; c++) {
+        const k = (r * mm.nx + c) * 3;
+        pos.push(v1.x + mm.dirs[k] * d, v1.y + mm.dirs[k + 1] * d, v1.z + mm.dirs[k + 2] * d);
+        uv.push(c / (mm.nx - 1), 1 - r / (mm.ny - 1));
+      }
+    }
+    for (let r = 0; r < mm.ny - 1; r++) {
+      for (let c = 0; c < mm.nx - 1; c++) {
+        const i = r * mm.nx + c;
+        idx.push(i, i + mm.nx, i + 1, i + 1, i + mm.nx, i + mm.nx + 1);
+      }
+    }
+    const g = new BufferGeometry();
+    g.setAttribute("position", new Float32BufferAttribute(pos, 3));
+    g.setAttribute("uv", new Float32BufferAttribute(uv, 2));
+    g.setIndex(idx);
+    const m = mat(await load(mm.image));
+    m.blending = AdditiveBlending;
+    wideMats.push(m);
+    const me = new Mesh(g, m);
+    me.renderOrder = order;
+    me.frustumCulled = false;
+    group.add(me);
+  };
   // Behind everything at 60 au; the precise Sun-Earth-Venus panel in front at 45 au.
-  await wide(data.mosaic, 60, 18);
+  if (data.mosaic.mesh) { await mesh(data.mosaic.mesh, 60, 18); } else { await wide(data.mosaic, 60, 18); }
   await wide(data.sun_earth_venus, 45, 19);
 
   for (const f of data.frames) {

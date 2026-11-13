@@ -6,37 +6,59 @@
       </button>
       <h2 id="cs-title">About Voyager</h2>
       <p>
-        Where the twin Voyager spacecraft are right now, how they got there, what they found at the edge of the
-        Sun's bubble, and how far the Sun's gravity really reaches. Every chapter says whether it shows something
+        Voyager 1 launched in 1977, when a brand-new home computer came with 4 kilobytes of memory. It flew past
+        Jupiter and Saturn, took the only picture of our whole solar system from the outside, and became the
+        first spacecraft in interstellar space. Its twin, Voyager 2, is still the only visitor Uranus and
+        Neptune have ever had. Nearly fifty years on, both are still phoning home. And in November 2026,
+        Voyager 1 gets so far away that a radio message from Earth takes a whole day to reach it.
+      </p>
+      <p>
+        Explore where they are right now, how they got there, what they found at the edge of the Sun's bubble,
+        and how far the Sun's gravity really reaches. Each chapter is tagged
         <strong class="t-m">measured</strong>, <strong class="t-o">modeled</strong> or
-        <strong class="t-p">predicted</strong>.
+        <strong class="t-p">predicted</strong>, so you know which is which.
       </p>
 
       <h3>Data and images</h3>
       <ul>
-        <li>Trajectories: NASA/JPL Horizons.</li>
+        <li>Trajectories: <a :href="L.horizons" v-bind="ext">NASA/JPL Horizons</a>.</li>
         <li>
-          Voyager particle data: NASA Space Physics Data Facility. CRS: E. C. Stone, A. C. Cummings; LECP:
-          S. M. Krimigis; PLS: J. D. Richardson.
-        </li>
-        <li>Plasma-wave sound: NASA and The University of Iowa (CC BY 4.0, space-audio.org).</li>
-        <li>Pale Blue Dot: NASA/JPL-Caltech, <em>Pale Blue Dot Revisited</em> (PIA23645). Family Portrait: NASA/JPL-Caltech (PIA00450, PIA00451, PIA00453).</li>
-        <li>
-          Heliosphere: shaped after McComas et al. 2015 (IBEX), Kleimann et al. 2022, Opher et al. 2015/2020 and
-          Dialynas et al. 2017, and fitted through Voyager's own crossings.
+          Voyager particle and plasma data: <a :href="L.spdf" v-bind="ext">NASA Space Physics Data Facility</a>.
+          CRS: E. C. Stone, A. C. Cummings; LECP: S. M. Krimigis; PLS: J. D. Richardson.
         </li>
         <li>
-          The Sun's gravitational domain: Veras &amp; Evans 2013, Bovy 2017, McKee et al. 2015. The Oort cloud
-          is illustrative, after Vokrouhlický et al. 2019 and Nesvorný et al. 2025.
+          Plasma-wave sound: NASA and The University of Iowa
+          (<a :href="L.pws" v-bind="ext">Voyager 1 interstellar plasma waves</a>, CC BY 4.0,
+          <a :href="L.spaceAudio" v-bind="ext">space-audio.org</a>).
         </li>
         <li>
-          Milky Way: ESA/Gaia/DPAC, Stefan Payne-Wardenaar (CC BY-SA 3.0 IGO), with arms after Reid et al. 2019.
+          Pale Blue Dot: NASA/JPL-Caltech, <a :href="L.pia23645" v-bind="ext"><em>Pale Blue Dot Revisited</em> (PIA23645)</a>.
+          Family Portrait: NASA/JPL-Caltech, <a :href="L.pia00450" v-bind="ext">PIA00450</a>,
+          <a :href="L.pia00451" v-bind="ext">PIA00451</a>, <a :href="L.pia00453" v-bind="ext">PIA00453</a>.
         </li>
         <li>
-          Pulsars: Golden Record cover (NASA/JPL), identified by W. R. Johnston; ATNF Pulsar Catalogue.
-          Gliese 445 flyby: Gaia DR3; Bailer-Jones &amp; Farnocchia 2019.
+          Heliosphere: shaped after <a :href="L.ibex" v-bind="ext">IBEX</a> results (McComas et al. 2015),
+          Kleimann et al. 2022, Opher et al. 2015/2020 and Dialynas et al. 2017, and fitted through Voyager's own
+          crossings. Now being mapped by <a :href="L.imap" v-bind="ext">IMAP</a>.
         </li>
-        <li>Sky: all-sky panorama by Eckhard Slawik (NOIRLab/NSF/AURA/E. Slawik/M. Zamani, CC BY 4.0).</li>
+        <li>
+          The Sun's gravitational domain: Veras &amp; Evans 2013, Bovy 2017, McKee et al. 2015. Nearby stars:
+          <a :href="L.gaia" v-bind="ext">Gaia DR3</a> distances. The Oort cloud is illustrative, after
+          Vokrouhlický et al. 2019 and Nesvorný et al. 2025.
+        </li>
+        <li>
+          Milky Way: <a :href="L.gaiaMap" v-bind="ext">ESA/Gaia/DPAC, Stefan Payne-Wardenaar</a>
+          (CC BY-SA 3.0 IGO), with arms after Reid et al. 2019.
+        </li>
+        <li>
+          Pulsars: <a :href="L.record" v-bind="ext">Golden Record cover</a> (NASA/JPL), identified by
+          <a :href="L.johnston" v-bind="ext">W. R. Johnston</a>; <a :href="L.atnf" v-bind="ext">ATNF Pulsar Catalogue</a>.
+          Gliese 445 flyby: <a :href="L.gaia" v-bind="ext">Gaia DR3</a>; Bailer-Jones &amp; Farnocchia 2019.
+        </li>
+        <li>
+          Sky: <a :href="L.sky" v-bind="ext">all-sky panorama by Eckhard Slawik</a>
+          (NOIRLab/NSF/AURA/E. Slawik/M. Zamani, CC BY 4.0).
+        </li>
       </ul>
 
       <p class="cs-fine">Created by A. David Weigel.</p>
@@ -66,9 +88,36 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 
+/** Where each credited data product / image lives. */
+const CREDIT_LINKS = {
+  horizons: "https://ssd.jpl.nasa.gov/horizons/",
+  spdf: "https://spdf.gsfc.nasa.gov/pub/data/voyager/",
+  pws: "https://space.physics.uiowa.edu/plasma-wave/voyager/v1pws_interstellar_epo.html",
+  spaceAudio: "https://space-audio.org/",
+  pia23645: "https://science.nasa.gov/photojournal/pale-blue-dot-revisited",
+  pia00450: "https://science.nasa.gov/photojournal/solar-system-portrait-view-of-the-sun-earth-and-venus",
+  pia00451: "https://science.nasa.gov/photojournal/solar-system-portrait-60-frame-mosaic",
+  pia00453: "https://science.nasa.gov/photojournal/solar-system-portrait-views-of-6-planets",
+  ibex: "https://science.nasa.gov/mission/ibex/",
+  imap: "https://science.nasa.gov/mission/imap/",
+  gaia: "https://www.cosmos.esa.int/web/gaia/dr3",
+  gaiaMap: "https://www.esa.int/ESA_Multimedia/Images/2025/01/The_best_Milky_Way_map_by_Gaia",
+  record: "https://science.nasa.gov/mission/voyager/golden-record-contents/",
+  johnston: "https://www.johnstonsarchive.net/astro/pulsarmap.html",
+  atnf: "https://www.atnf.csiro.au/research/pulsar/psrcat/",
+  sky: "https://noirlab.edu/public/images/noirlab2430b/",
+};
+
 export default defineComponent({
   name: "CreditsSheet",
   emits: ["close"],
+  data() {
+    return {
+      ext: { target: "_blank", rel: "noopener" },
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      L: CREDIT_LINKS,
+    };
+  },
   mounted() {
     (this.$refs.close as HTMLElement | undefined)?.focus();
     window.addEventListener("keydown", this.onKey);

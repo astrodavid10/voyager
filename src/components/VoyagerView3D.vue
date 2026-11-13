@@ -17,7 +17,10 @@
     <div class="v3d-pins" aria-hidden="true">
       <div v-for="p in leaderPins" :key="'ld-' + p.id" class="leader">
         <div class="leader-line" :style="leaderLine(p)" />
-        <div class="leader-label" :style="{ transform: `translate(${p.lx}px, ${p.ly}px)`, '--pin': p.color }">
+        <div
+          class="leader-label" :class="{ right: p.leaderSide === 'r' }"
+          :style="{ transform: `translate(${p.lx}px, ${p.ly}px)`, '--pin': p.color }"
+        >
           {{ p.label }}
         </div>
       </div>
@@ -98,6 +101,8 @@ installEngine();
 const CRAFT = ["voyager1", "voyager2"] as const;
 /** Length of the "toward the Galactic center" arrow, au (past the 283,000 au tidal edge). */
 const GC_ARROW_AU = 380000;
+/** Family Portrait: camera-to-pivot distance, au (the camera stays at Voyager 1). */
+const FAM_EYE = 0.05;
 
 function eclXYZ(lonDeg: number, latDeg: number, rAu: number): Vec3 {
   const lo = (lonDeg * Math.PI) / 180, la = (latDeg * Math.PI) / 180;
@@ -120,6 +125,8 @@ interface Pin {
   leader?: boolean;
   lx?: number;
   ly?: number;
+  /** Which side of the dot the parked label sits ("l": (lx, ly) is its right edge; "r": its left edge). */
+  leaderSide?: "l" | "r";
 }
 
 /** Lower = placed first, so it wins a collision. */
@@ -157,7 +164,9 @@ function declutter(pins: Pin[], vw: number, vh: number, obstacles: Rect[]): void
     const own = dots[i];
     if (p.leader) {
       // Parked label: reserve its box so other labels stay clear of it.
-      placed.push({ x0: (p.lx ?? 0) - 60, y0: (p.ly ?? 0) - 11, x1: (p.lx ?? 0) + 2, y1: (p.ly ?? 0) + 11 });
+      const lx = p.lx ?? 0, ly = p.ly ?? 0;
+      placed.push(p.leaderSide === "r" ? { x0: lx - 2, y0: ly - 11, x1: lx + 60, y1: ly + 11 }
+        : { x0: lx - 60, y0: ly - 11, x1: lx + 2, y1: ly + 11 });
       continue;
     }
     const small = p.kind === "pulsar" || p.kind === "crossing";
@@ -204,6 +213,8 @@ interface Runtime {
   shellMats: Record<string, ShaderMaterial>;
   tidal: Group | null;
   gcArrow: ArrowHelper | null;
+  /** Nearest stars, pin id -> heliocentric ecliptic au (public/data/neighbors.json). */
+  neighbors: Record<string, Vec3>;
   oort: Points | null;
   galaxy: GalaxyLayer | null;
   galaxyLabels: Record<string, GalaxyLabel>;
@@ -211,6 +222,8 @@ interface Runtime {
   pbdAlpha: number;
   family: FamilyPortrait | null;
   familyAlpha: number;
+  /** Standing at Voyager 1 for the whole Family Portrait: zoom held at FAM_EYE. */
+  famEye: boolean;
   pulsarMap: PulsarMap | null;
   flyby: Flyby | null;
   obstacles: Rect[];
@@ -262,7 +275,7 @@ export default defineComponent({
       frame: 0,
       rt: markRaw({
         stage: null, gestures: null, eph: null, trails: {}, targets: [], projected: [],
-        world: null, helio: null, offset: [0, 0, 0], shellMats: {}, tidal: null, gcArrow: null, oort: null, galaxy: null, galaxyLabels: {}, pbd: null, pbdAlpha: 0, family: null, familyAlpha: 0, pulsarMap: null, flyby: null, obstacles: [], obstaclesAt: 0, momentAlpha: 0, momentT0: 0, flybyYears: 0,
+        world: null, helio: null, offset: [0, 0, 0], shellMats: {}, tidal: null, gcArrow: null, neighbors: {}, oort: null, galaxy: null, galaxyLabels: {}, pbd: null, pbdAlpha: 0, family: null, familyAlpha: 0, famEye: false, pulsarMap: null, flyby: null, obstacles: [], obstaclesAt: 0, momentAlpha: 0, momentT0: 0, flybyYears: 0,
         lastYearEmit: 0, lastFadeMs: 0, lastTimeSync: 0,
         timer: 0, destroyed: false,
       } as Runtime),
@@ -339,7 +352,7 @@ export default defineComponent({
 
     /** CSS for a 1 px line from the dot to the parked label's right edge. */
     leaderLine(p: Pin): Record<string, string> {
-      const dx = (p.lx ?? 0) + 4 - p.x, dy = (p.ly ?? 0) - p.y;
+      const dx = (p.lx ?? 0) + (p.leaderSide === "r" ? -4 : 4) - p.x, dy = (p.ly ?? 0) - p.y;
       return {
         width: `${Math.hypot(dx, dy)}px`,
         transform: `translate(${p.x}px, ${p.y}px) rotate(${Math.atan2(dy, dx)}rad)`,
@@ -417,7 +430,7 @@ export default defineComponent({
       }
       case "edge": {
         const { lat, lng } = viewFromEcliptic([0.8, 0.05, 0.6]); // side-on to the Galactic-center direction
-        return { target: [0, 0, 0], distanceAu: fitDistance(330000), lat, lng };
+        return { target: [0, 0, 0], distanceAu: fitDistance(420000), lat, lng };
       }
       default: {
         // Today: the Sun and both craft, seen from the side so V1 (35 deg
@@ -504,9 +517,23 @@ export default defineComponent({
       const n: Vec3 = [sv[1] * cv[2] - sv[2] * cv[1], sv[2] * cv[0] - sv[0] * cv[2], sv[0] * cv[1] - sv[1] * cv[0]];
       const { lat, lng } = viewFromEcliptic(n);
       const target: Vec3 = [(s0[0] + enc.craft[0]) * 0.4, (s0[1] + enc.craft[1]) * 0.4, (s0[2] + enc.craft[2]) * 0.4];
+      const dist = fitDistance(7.5e5);
+      // Screen-up = ecliptic north, flattened onto the view plane. On a portrait
+      // phone the card covers the bottom, so aim BELOW the scene: it rides up.
+      const nn = Math.hypot(n[0], n[1], n[2]);
+      const up: Vec3 = [-n[0] * n[2] / (nn * nn), -n[1] * n[2] / (nn * nn), 1 - n[2] * n[2] / (nn * nn)];
+      const un = Math.hypot(up[0], up[1], up[2]);
+      let rotation = 0;
+      if (un > 0.05) {
+        rotation = rollForUp(lat, lng, up);
+        if (window.innerWidth < window.innerHeight) {
+          const k = (0.3 * dist * Math.tan(Math.PI / 8)) / un;
+          target[0] -= up[0] * k; target[1] -= up[1] * k; target[2] -= up[2] * k;
+        }
+      }
       rt.flybyYears = 0;
       rt.momentT0 = performance.now() + 3000; // the clock starts after the flight
-      await flyTo({ target, distanceAu: fitDistance(7.5e5), lat, lng, rotation: 0 }, 3000);
+      await flyTo({ target, distanceAu: dist, lat, lng, rotation }, 3000);
     },
 
     /**
@@ -535,17 +562,34 @@ export default defineComponent({
       const d = rt.family.data;
       const v1 = d.v1_au;
       if (which === "all") {
-        const cs = d.mosaic.corners_on_unit_plane;
-        const c: Vec3 = [0, 1, 2].map((k) => (cs[0][k] + cs[1][k] + cs[2][k] + cs[3][k]) / 4) as Vec3;
-        const n = Math.hypot(c[0], c[1], c[2]);
-        const dir: Vec3 = [c[0] / n, c[1] / n, c[2] / n];
-        const up: Vec3 = [0, 1, 2].map((k) => cs[0][k] - cs[3][k]) as Vec3; // left edge, bottom -> top
-        const dist = 40;
+        // Stand AT Voyager 1: the camera orbits a point only FAM_EYE au ahead, so a
+        // drag turns the view (looks around the mosaic) without leaving the spot
+        // where everything lines up; zoom is held there (tick).
+        const mm = d.mosaic.mesh;
+        let dir: Vec3, up: Vec3;
+        if (mm) { dir = mm.center_dir_ecl; up = mm.up_ecl; } else {
+          const cs = d.mosaic.corners_on_unit_plane;
+          dir = [0, 1, 2].map((k) => (cs[0][k] + cs[1][k] + cs[2][k] + cs[3][k]) / 4) as Vec3;
+          up = [0, 1, 2].map((k) => cs[0][k] - cs[3][k]) as Vec3; // left edge, bottom -> top
+        }
+        if (window.innerWidth < window.innerHeight) {
+          // Portrait shows ~22 deg across: start on the Sun-Earth-Venus-Jupiter end.
+          const pts = ["Venus", "Jupiter"].map((k) => d.frames.find((f) => f.planet === k)!.planet_au);
+          const u = (q: Vec3): Vec3 => { const n = Math.hypot(q[0] - v1[0], q[1] - v1[1], q[2] - v1[2]);
+            return [(q[0] - v1[0]) / n, (q[1] - v1[1]) / n, (q[2] - v1[2]) / n]; };
+          const a = u(pts[0]), b = u(pts[1]);
+          dir = [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+        }
+        const n = Math.hypot(dir[0], dir[1], dir[2]);
+        dir = [dir[0] / n, dir[1] / n, dir[2] / n];
         const { lat, lng } = viewFromEcliptic([-dir[0], -dir[1], -dir[2]]);
-        await flyTo({ target: [v1[0] + dir[0] * dist, v1[1] + dir[1] * dist, v1[2] + dir[2] * dist], distanceAu: dist,
-          lat, lng, rotation: rollForUp(lat, lng, up) }, 3200);
+        rt.famEye = false;
+        await flyTo({ target: [v1[0] + dir[0] * FAM_EYE, v1[1] + dir[1] * FAM_EYE, v1[2] + dir[2] * FAM_EYE],
+          distanceAu: FAM_EYE, lat, lng, rotation: rollForUp(lat, lng, up) }, 3200);
+        rt.famEye = this.family === "all";
         return;
       }
+      rt.famEye = false;
       const f = d.frames.find((x) => x.planet === which);
       if (!f) { return; }
       const p = f.planet_au;
@@ -590,9 +634,7 @@ export default defineComponent({
         pins.push({ id: `x-${c.craft}-${c.kind}`, kind: "crossing", label: c.label, sub: "",
           color: eph.bodies[c.craft].color, x: 0, y: 0, visible: false });
       }
-      // alpha Cen (SIMBAD/Gaia via the research notes): 1.347 pc at ecliptic (239.5, -42.6).
-      pins.push({ id: "acen", kind: "star", label: "Alpha Centauri, the nearest stars", sub: "4.4 light-years",
-        color: "#ffe0a3", x: 0, y: 0, visible: false });
+      // The nearest stars (alpha Cen, Barnard's Star...) arrive with neighbors.json (loadGravity).
       pins.push({ id: "gc", kind: "star", label: "Toward the Milky Way's center", sub: "",
         color: "#9fdcff", x: 0, y: 0, visible: false });
       this.pins = pins;
@@ -730,6 +772,22 @@ export default defineComponent({
         console.error("[VoyagerView3D] tidal.glb failed:", err);
       }
       try {
+        // The stars that sit as close to the Sun as its own tidal edge (pipeline/neighbors.py).
+        /* eslint-disable @typescript-eslint/naming-convention -- pipeline JSON keys */
+        const nb = (await (await fetch("./data/neighbors.json")).json()) as {
+          stars: { id: string; label: string; dist_ly: number; xyz_au: Vec3 }[] };
+        /* eslint-enable @typescript-eslint/naming-convention */
+        for (const st of nb.stars) {
+          const id = `nb-${st.id}`;
+          rt.neighbors[id] = st.xyz_au;
+          this.pins.push({ id, kind: "star", label: st.label, sub: `${st.dist_ly} light-years`,
+            color: "#ffe0a3", x: 0, y: 0, visible: false });
+          rt.targets.push({ id, position: new Vector3() });
+        }
+      } catch (err) {
+        console.error("[VoyagerView3D] neighbors.json failed:", err);
+      }
+      try {
         const buf = await (await fetch("./data/oort.bin")).arrayBuffer();
         rt.oort = markRaw(createOortPoints(new Float32Array(buf), Math.min(window.devicePixelRatio || 1, 2)));
         rt.oort.visible = false;
@@ -797,6 +855,9 @@ export default defineComponent({
           this.$emit("flyby-year", Math.round(rt.flybyYears));
         }
       }
+      if (rt.famEye) {
+        if (this.pbd && this.family === "all") { aimZoom(FAM_EYE); } else { rt.famEye = false; }
+      }
       if (this.chapter === "journey" && !this.pbd && this.following) {
         // Zoom follows Voyager outward (zoom locked); the guest keeps the angle.
         aimZoom(fitDistance(Math.max(12, distanceAu(this.craftPos("voyager1")) * 1.15)));
@@ -807,7 +868,7 @@ export default defineComponent({
       const far = viewR > 2500;
       if (rt.oort) { rt.oort.visible = viewR > 1200; }
       if (rt.tidal) { rt.tidal.visible = viewR > 25000; }
-      if (rt.gcArrow) { rt.gcArrow.visible = viewR > 25000 && viewR < 1e6; }
+      if (rt.gcArrow) { rt.gcArrow.visible = viewR > 25000 && viewR < 1e6 && this.moment !== "flyby"; }
       rt.galaxy?.update({ viewRAu: viewR, ms });
       // Pins
       const showCrossings = this.chapter === "bubble";
@@ -819,7 +880,7 @@ export default defineComponent({
           const c = CROSSINGS.find((cc) => `x-${cc.craft}-${cc.kind}` === p.id)!;
           pos = positionAt(eph.bodies[c.craft], Date.parse(c.date + "T00:00:00Z"));
         }
-        if (p.id === "acen") { pos = eclXYZ(239.5, -42.6, 277900); }
+        if (p.id.startsWith("nb-")) { pos = rt.neighbors[p.id] ?? pos; }
         if (p.id === "gc") { pos = eclXYZ(266.84, -5.54, GC_ARROW_AU); }
         if (p.kind === "galaxy") { pos = rt.galaxyLabels[p.id].position; }
         if (p.id.startsWith("fam-") && rt.family) {
@@ -844,13 +905,13 @@ export default defineComponent({
           vis = vis && this.chapter === "journey" && (this.pbd || distanceAu(this.craftPos("voyager1")) < 25);
           p.label = "Earth";
           p.sub = this.pbd ? "Feb. 14, 1990" : "";
-          p.ring = this.pbd && (!this.family || this.family === "Earth");
+          p.ring = this.pbd && (!this.family || this.family === "Earth" || this.family === "all");
         }
-        if (p.kind === "star") { vis = vis && viewR > 60000; }
+        if (p.kind === "star") { vis = vis && viewR > 60000 && this.moment !== "flyby"; }
         if (far && (p.id === "sun" || p.id === "voyager2")) { vis = false; }
         if (p.id.startsWith("fam-")) {
           vis = vis && this.pbd && !!this.family;
-          p.ring = this.family === p.label;
+          p.ring = this.family === p.label || this.family === "all";
         } else if (p.kind === "pulsar") {
           vis = vis && this.moment === "pulsars";
         } else if (p.kind === "flyby") {
@@ -883,15 +944,18 @@ export default defineComponent({
         }
       }
       if (performance.now() - rt.obstaclesAt > 250) { rt.obstaclesAt = performance.now(); this.refreshObstacles(); }
-      // Earth races around the Sun during the journey: park its label up and to
-      // the left of the Sun and join it to the dot with a leader line.
+      // Earth races around the Sun during the journey, and the planets crossing
+      // in front kept bumping the Sun's label: park both labels (Earth up-left,
+      // Sun up-right of the Sun) and join each to its dot with a leader line.
       const sunIdx = this.pins.findIndex((q) => q.id === "sun");
       const sunQ = sunIdx >= 0 ? rt.projected[sunIdx] : undefined;
       for (const p of this.pins) {
-        if (p.id !== "earth") { continue; }
-        p.leader = this.chapter === "journey" && !this.pbd && !!sunQ?.visible;
+        if (p.id !== "earth" && p.id !== "sun") { continue; }
+        p.leader = this.chapter === "journey" && !this.pbd && !!sunQ?.visible && p.visible;
+        p.leaderSide = p.id === "sun" ? "r" : "l";
         if (p.leader && sunQ) {
-          p.lx = Math.min(w - 20, Math.max(80, sunQ.xCss - 70));
+          const sx = p.id === "sun" ? 70 : -70;
+          p.lx = Math.min(w - 80, Math.max(80, sunQ.xCss + sx));
           p.ly = Math.min(h - 20, Math.max(110, sunQ.yCss - 70));
         }
       }
@@ -935,6 +999,7 @@ export type { EngineSetting };
 .leader-label {
   position: absolute; left: 0; top: 0; margin: -11px 0 0 -60px; width: 60px; text-align: right;
   font-size: 14px; line-height: 22px; color: #fff; text-shadow: 0 1px 3px #000, 0 0 6px #000;
+  &.right { margin-left: 0; text-align: left; }
 }
 .pin .pin-dot { position: absolute; left: 0; top: 0; }
 .pin .pin-label { position: absolute; left: 11px; top: -10px; margin-top: 0; }
@@ -996,5 +1061,9 @@ export type { EngineSetting };
 .v3d-cover {
   position: absolute; inset: 0; display: grid; place-items: center; align-content: center; gap: 12px;
   background: #05030f; color: #cfd6ff; font-size: 16px; text-align: center; padding: 24px;
+}
+// Phones: the story card owns the bottom 44vh; center the loader in the space above it.
+@media (max-width: 899px) and (orientation: portrait) {
+  .v3d-cover { padding: 110px 16px calc(44vh + 16px); }
 }
 </style>

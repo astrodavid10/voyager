@@ -55,8 +55,10 @@ export const CHAPTERS: Chapter[] = [
     tiers: ["PREDICTED"],
     body: "About 283,000 times farther than Earth is from the Sun, the Galaxy's pull starts to win "
       + "over the Sun's. It is a fuzzy zone, not a wall, stretched toward the center of the Milky Way. "
+      + "Our nearest neighbors sit just beyond it, Alpha Centauri right at its edge, and stars drifting past "
+      + "nudge the far Oort cloud, sending comets our way. "
       + "Voyager has left the Sun's bubble, not the solar system. "
-      + "Each Voyager carries a Golden Record of sounds and images from Earth for whoever finds it.",
+      + "Each Voyager carries a Golden Record for whoever finds it.",
     next: "Back to today",
   },
 ];

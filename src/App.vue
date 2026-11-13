@@ -33,11 +33,12 @@
 
     <button
       v-if="cardHidden" type="button" class="vy-show" data-obstacle :aria-label="`Show the story: ${chapter.title}`"
-      @click="cardHidden = false"
+      @click="cardHidden = false; autoHidden = false"
     >
       <font-awesome-icon icon="chevron-up" /> {{ chapter.title }}
     </button>
-    <section v-show="!cardHidden" class="vy-card" data-obstacle :aria-label="chapter.title">
+    <section
+      v-show="!cardHidden" class="vy-card" :class="{ compact: chapter.id === 'edge' && moment === 'flyby' }" data-obstacle :aria-label="chapter.title">
       <div class="vy-card-meta">
         <span v-for="t in chapter.tiers" :key="t" class="tier" :class="'tier-' + t.toLowerCase()">{{ t }}</span>
         <span class="vy-progress">{{ index + 1 }} of {{ chapters.length }}</span>
@@ -63,7 +64,13 @@
             :aria-pressed="family === pl" @click="family = pl"
           >{{ pl }}</button>
         </div>
-        <p class="vy-note">Images: NASA/JPL-Caltech (PIA00450, PIA00451, PIA00453). Camera roll estimated.</p>
+        <p class="vy-note">
+          Images: NASA/JPL-Caltech
+          (<a href="https://science.nasa.gov/photojournal/solar-system-portrait-view-of-the-sun-earth-and-venus" target="_blank" rel="noopener">PIA00450</a>,
+          <a href="https://science.nasa.gov/photojournal/solar-system-portrait-60-frame-mosaic" target="_blank" rel="noopener">PIA00451</a>,
+          <a href="https://science.nasa.gov/photojournal/solar-system-portrait-views-of-6-planets" target="_blank" rel="noopener">PIA00453</a>).
+          Camera roll estimated; drag to look around.
+        </p>
         <button v-if="family !== 'all'" type="button" class="btn ghost vy-more" @click="family = 'all'">
           The whole portrait
         </button>
@@ -77,7 +84,9 @@
         </p>
         <p class="vy-note">
           “Look again at that dot. That's here. That's home. That's us.” Carl Sagan.
-          Image: NASA/JPL-Caltech, Pale Blue Dot Revisited (PIA23645). Camera roll estimated from the sunlight.
+          Image: NASA/JPL-Caltech,
+          <a href="https://science.nasa.gov/photojournal/pale-blue-dot-revisited" target="_blank" rel="noopener">Pale Blue Dot Revisited (PIA23645)</a>.
+          Camera roll estimated from the sunlight.
         </p>
         <button type="button" class="btn ghost vy-more" @click="family = 'all'">See the whole Family Portrait</button>
         <button type="button" class="btn ghost vy-more" @click="endPbd">Continue the journey</button>
@@ -91,12 +100,12 @@
       <template v-else-if="chapter.id === 'edge' && moment === 'flyby'">
         <p class="vy-body">
           <strong class="vy-year">+{{ flybyYears.toLocaleString() }} years</strong>
-          Voyager 1 is heading toward Ophiuchus, while the red dwarf Gliese 445, now 17 light-years away,
-          races toward the Sun at 114 km/s. In about 44,000 years they pass within
-          1.9 light-years of each other. It is the first star Voyager 1 will pass closer to than the Sun.
+          The red dwarf Gliese 445 races toward us at 114 km/s. In about 44,000 years it passes
+          1.9 light-years from Voyager 1: the first star Voyager will be closer to than the Sun.
         </p>
-        <p class="vy-note">
-          Straight-line model from Voyager's trajectory and Gaia DR3; Bailer-Jones &amp; Farnocchia (2019) find
+        <p class="vy-note vy-wide-only">
+          Straight-line model from Voyager's trajectory and
+          <a href="https://www.cosmos.esa.int/web/gaia/dr3" target="_blank" rel="noopener">Gaia DR3</a>; Bailer-Jones &amp; Farnocchia (2019) find
           1.88 light-years in 44,000 years. NASA's older figure was 1.6 light-years in 40,000 years.
         </p>
         <button type="button" class="btn ghost vy-more" @click="moment = ''">Back to the edge</button>
@@ -108,8 +117,9 @@
           astronomers place them today. The directions still hold; the distances were rough guesses in 1977.
         </p>
         <p class="vy-note">
-          Pulsars identified by W. R. Johnston; distances from the ATNF Pulsar Catalogue (v2.9.0).
-          Cover: NASA/JPL.
+          Pulsars identified by <a href="https://www.johnstonsarchive.net/astro/pulsarmap.html" target="_blank" rel="noopener">W. R. Johnston</a>;
+          distances from the <a href="https://www.atnf.csiro.au/research/pulsar/psrcat/" target="_blank" rel="noopener">ATNF Pulsar Catalogue</a>
+          (v2.9.0). Cover: <a href="https://science.nasa.gov/mission/voyager/golden-record-contents/" target="_blank" rel="noopener">NASA/JPL</a>.
         </p>
         <button type="button" class="btn ghost vy-more" @click="moment = ''">Back to the edge</button>
       </template>
@@ -142,7 +152,8 @@
         <p v-if="playing" class="vy-note">
           Plasma waves recorded by Voyager 1 in 2012–13, converted to sound (not a microphone recording).
           Their rising pitch shows the gas getting denser beyond the Sun's bubble.
-          Courtesy NASA and the University of Iowa, CC BY 4.0, space-audio.org.
+          Courtesy NASA and the University of Iowa, CC BY 4.0,
+          <a href="https://space.physics.uiowa.edu/plasma-wave/voyager/v1pws_interstellar_epo.html" target="_blank" rel="noopener">space-audio.org</a>.
         </p>
       </template>
 
@@ -222,6 +233,8 @@ export default defineComponent({
       familyPlanets: ["Venus", "Earth", "Jupiter", "Saturn", "Uranus", "Neptune"],
       moment: "",
       cardHidden: false,
+      /** The card was hidden for a picture moment (not by the guest): bring it back after. */
+      autoHidden: false,
       journeyRunning: false,
       journeyWaiting: false,
       journeyFallback: 0,
@@ -296,6 +309,7 @@ export default defineComponent({
     },
   },
   watch: {
+    family(f: string) { if (f) { this.autoHide(true); } },
     "chapter.id"(id: string) {
       cancelAnimationFrame(this.raf);
       this.journeyRunning = false;
@@ -303,6 +317,7 @@ export default defineComponent({
       this.pbd = false;
       this.family = "";
       this.moment = "";
+      this.restoreCard();
       if (id === "journey") {
         // Hold at launch until the camera has zoomed in on the inner solar
         // system (the view emits "framed"); a fallback starts it regardless.
@@ -364,11 +379,26 @@ export default defineComponent({
     },
     startPbd(): void {
       cancelAnimationFrame(this.raf);
+      // Tapped before the journey began: its pending start must not override 1990.
+      this.journeyWaiting = false;
+      window.clearTimeout(this.journeyFallback);
       this.journeyRunning = false;
       this.sceneMs = PBD_MS;
       this.pbd = true;
+      this.autoHide();
+    },
+    /** Phones / small windows: get the card out of the way of a picture (Pale Blue Dot, Family Portrait). */
+    autoHide(always = false): void {
+      // The Family Portrait spans ~70 deg: it needs the whole screen everywhere.
+      if (this.kioskMode || (!always && window.innerWidth >= 900 && window.innerHeight >= 600)) { return; }
+      this.cardHidden = true;
+      this.autoHidden = true;
+    },
+    restoreCard(): void {
+      if (this.autoHidden) { this.cardHidden = false; this.autoHidden = false; }
     },
     endPbd(): void {
+      this.restoreCard();
       this.family = "";
       this.pbd = false;
       this.runJourney(PBD_MS, 14);
