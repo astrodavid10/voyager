@@ -959,16 +959,18 @@ export default defineComponent({
         p.leaderSide = p.id === "sun" ? "r" : "l";
         if (p.leader && sunQ) {
           const sx = p.id === "sun" ? 70 : -70;
-          p.lx = Math.min(w - 80, Math.max(80, sunQ.xCss + sx));
-          p.ly = Math.min(h - 20, Math.max(110, sunQ.yCss - 70));
+          let lx = Math.min(w - 80, Math.max(80, sunQ.xCss + sx));
+          const ly = Math.min(h - 20, Math.max(110, sunQ.yCss - 70));
+          const right = p.leaderSide === "r";
           // Step the parked label out of any UI chrome (ladder, card): AUDIT phone runs.
           for (let pass = 0; pass < 3; pass++) {
-            const r = p.leaderSide === "r" ? { x0: p.lx - 2, x1: p.lx + 60 } : { x0: p.lx - 60, x1: p.lx + 2 };
-            const o = rt.obstacles.find((q) => r.x0 < q.x1 && r.x1 > q.x0 && p.ly! - 11 < q.y1 && p.ly! + 11 > q.y0);
+            const x0: number = right ? lx - 2 : lx - 60, x1: number = right ? lx + 60 : lx + 2;
+            const o = rt.obstacles.find((q) => x0 < q.x1 && x1 > q.x0 && ly - 11 < q.y1 && ly + 11 > q.y0);
             if (!o) { break; }
             const toRight = o.x0 + o.x1 < w; // chrome on the left half: go right of it
-            if (p.leaderSide === "r") { p.lx = toRight ? o.x1 + 4 : o.x0 - 64; } else { p.lx = toRight ? o.x1 + 64 : o.x0 - 4; }
+            if (right) { lx = toRight ? o.x1 + 4 : o.x0 - 64; } else { lx = toRight ? o.x1 + 64 : o.x0 - 4; }
           }
+          p.lx = lx; p.ly = ly;
         }
       }
       declutter(this.pins, w, h, rt.obstacles);
