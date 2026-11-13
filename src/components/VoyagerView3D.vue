@@ -135,6 +135,8 @@ const PIN_PRIORITY: Record<string, number> = {
 };
 
 interface Rect { x0: number; y0: number; x1: number; y1: number }
+/** Markers a top-priority label may cover when nothing else fits (minor ticks only). */
+const SMALL_KINDS = new Set(["crossing", "pulsar"]);
 const placed: Rect[] = [];
 const dots: Rect[] = [];
 const order: Pin[] = [];
@@ -178,7 +180,8 @@ function declutter(pins: Pin[], vw: number, vh: number, obstacles: Rect[]): void
     const h = lines * 17 + 2;
     const gap = p.ring ? 22 : 11;
     // Candidate placements: beside the dot, then above, then below it.
-    const cands: [Pin["side"], number][] = [["r", -10], ["l", -10], ["r", -h - 4], ["l", -h - 4], ["r", 8], ["l", 8]];
+    const cands: [Pin["side"], number][] = [["r", -10], ["l", -10], ["r", -h - 4], ["l", -h - 4], ["r", 8], ["l", 8],
+      ["r", -h - 30], ["l", -h - 30], ["r", 34], ["l", 34]];
     const rectFor = (side: Pin["side"], dy: number): Rect => side === "r"
       ? { x0: p.x + gap, y0: p.y + dy, x1: p.x + gap + w, y1: p.y + dy + h }
       : { x0: p.x - gap - w, y0: p.y + dy, x1: p.x - gap, y1: p.y + dy + h };
@@ -188,7 +191,8 @@ function declutter(pins: Pin[], vw: number, vh: number, obstacles: Rect[]): void
     // Top-priority labels (craft, flyby, Sun) may cover LOWER-priority markers
     // rather than vanish; everything else must clear every marker.
     const loose = (r: Rect) => r.x0 >= 2 && r.x1 <= vw - 2 && r.y0 >= 0 && r.y1 <= vh
-      && !placed.some((q) => over(r, q));
+      && !placed.some((q) => over(r, q))
+      && !dots.some((q, k) => q !== own && over(r, q) && !SMALL_KINDS.has(order[k].kind));
     const vip = (PIN_PRIORITY[p.kind] ?? 9) <= 3;
     p.labelHidden = true;
     for (const test of vip ? [fits, loose] : [fits]) {
@@ -957,6 +961,14 @@ export default defineComponent({
           const sx = p.id === "sun" ? 70 : -70;
           p.lx = Math.min(w - 80, Math.max(80, sunQ.xCss + sx));
           p.ly = Math.min(h - 20, Math.max(110, sunQ.yCss - 70));
+          // Step the parked label out of any UI chrome (ladder, card): AUDIT phone runs.
+          for (let pass = 0; pass < 3; pass++) {
+            const r = p.leaderSide === "r" ? { x0: p.lx - 2, x1: p.lx + 60 } : { x0: p.lx - 60, x1: p.lx + 2 };
+            const o = rt.obstacles.find((q) => r.x0 < q.x1 && r.x1 > q.x0 && p.ly! - 11 < q.y1 && p.ly! + 11 > q.y0);
+            if (!o) { break; }
+            const toRight = o.x0 + o.x1 < w; // chrome on the left half: go right of it
+            if (p.leaderSide === "r") { p.lx = toRight ? o.x1 + 4 : o.x0 - 64; } else { p.lx = toRight ? o.x1 + 64 : o.x0 - 4; }
+          }
         }
       }
       declutter(this.pins, w, h, rt.obstacles);
